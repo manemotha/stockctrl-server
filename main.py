@@ -53,6 +53,11 @@ def signup():
     except pymongo.errors.ConnectionFailure:
         return {"result": "failed connecting to mongodb-database"}
     
+    # [ensure] username is valid
+    username_validation_result = validate_username(user_data["username"])
+    if username_validation_result != "valid username":
+        return username_validation_result
+    
     # check if username already exists
     if mongodb_connection.stockctrl.profiles.find_one({"username":user_data["username"]}):
         return {"error": "account with same username exists"}
