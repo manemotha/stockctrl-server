@@ -1,0 +1,2 @@
+# StockCtrl
+Stock Management System
