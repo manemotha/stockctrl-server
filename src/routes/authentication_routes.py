@@ -9,7 +9,7 @@ from src.utils.validation import *
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
-@authentication_routes.route('/authentication/signup', methods=['PUT'])
+@authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
     """Generate a user account.
     
