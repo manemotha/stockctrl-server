@@ -1,2 +1,2 @@
-from .const_variables import *
+from .config import *
 from .validation import *
