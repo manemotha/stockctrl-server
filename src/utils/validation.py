@@ -1,6 +1,3 @@
-from __init__ import *
-
-
 def validate_password(password: str):
     """
     Ensure password is valid and meets SC requirements.
