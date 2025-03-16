@@ -5,7 +5,7 @@ import json
 import bcrypt
 import uuid
 from src.config import MONGODB_SERVER_URI
-from src.utils.validation import *
+from src.utils.input_handler import *
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
