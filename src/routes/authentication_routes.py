@@ -4,7 +4,7 @@ import pymongo
 import json
 import bcrypt
 import uuid
-from src.config import mongodb_database_url
+from src.config import MONGODB_SERVER_URI
 from src.utils.validation import *
 
 authentication_routes = Blueprint("authentication_routes", __name__)
@@ -52,7 +52,7 @@ def signup():
         return {"error": "missing required keys"}
     
     # mongodb-database connection
-    mongodb_connection = MongoClient(mongodb_database_url, serverSelectionTimeoutMS=500)
+    mongodb_connection = MongoClient(MONGODB_SERVER_URI, serverSelectionTimeoutMS=500)
         
     # handle mongodb-database connection error
     try:
