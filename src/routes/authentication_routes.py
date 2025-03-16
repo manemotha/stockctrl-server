@@ -11,9 +11,11 @@ authentication_routes = Blueprint("authentication_routes", __name__)
 
 @authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
-    """Generate a user account.
+    """
+    # Signup
+    **Generate user account**.
     
-    Data is sent in JSON format. The JSON data should include the following:
+    Request data is sent in containing the following keys:
     - username:
     - email:
     - password:
@@ -25,7 +27,8 @@ def signup():
         - industry:
         - logo: (optional)
     }
-    Return: user profile data from database in JSON format.
+    
+    Return: `"response": "account generated"`
     """
     
     # handle data from request

@@ -1,11 +1,12 @@
 def validate_password(password: str):
     """
-    Ensure password is valid and meets SC requirements.
+    # Validate Password
+    Ensure password is valid and meets **SC** requirements.
+
+    **Keyword arguments:**  
+    Password : Is the string to validate (str)
     
-    Keyword arguments:
-    password -- is the user password to validate (string)
-    
-    Return: True || dict "error": validation error massage
+    Return: `True` or `"error": validation error massage`
     """
     
     # ensure user:password meets requirements
@@ -24,12 +25,13 @@ def validate_password(password: str):
 
 def validate_username(username: str):
     """
-    Ensure username is valid and meets SC requirements.
+    # Validate Username
+    Ensure username is valid and meets **SC** requirements.
     
-    Keyword arguments:
-    username - is the user username to validate (string)
+    **Keyword arguments:**  
+    username : is the string to validate (str)
     
-    Return: valid username || dict "error": validation error massage
+    Return: `"valid username"` or `"error": validation error massage`
     """
     
     # [ensure] username is type:string
