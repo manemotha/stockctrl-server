@@ -7,6 +7,7 @@ import uuid
 from src.config import MONGODB_SERVER_URI
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
+from schema import Schema, And, Use, Optional
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
