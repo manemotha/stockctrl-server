@@ -6,6 +6,7 @@ import bcrypt
 import uuid
 from src.config import MONGODB_SERVER_URI
 from src.utils.input_handler import *
+from schema import Schema, And, Use, Optional
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
@@ -37,22 +38,27 @@ def signup():
     except json.decoder.JSONDecodeError as error:
         return {"error":f"{error}"}
     
-    # [ensure] user_data contains required keys
-    try:
-        user_data = {
-            "_id": uuid.uuid4().hex,
-            "username": user_data["username"],
-            "email": user_data["email"],
-            "password": user_data["password"],
-            "name": user_data["name"],
-            "organization": {
-                "name": user_data["organization"]["name"],
-                "type": user_data["organization"]["type"],
-                "industry": user_data["organization"]["industry"],
-            }    
+    # Define schema for user data validation
+    user_schema = Schema({
+        'username': And(str, len, Use(str.lower)),
+        'email': And(str, len),
+        'password': And(str, len),
+        'name': And(str, len),
+        Optional('phone_number', default=""): And(str, len),
+        'organization': {
+            'name': And(str, len),
+            'type': And(str, len),
+            'industry': And(str, len),
+            Optional('logo', default=""): And(str, len)
         }
-    except KeyError:
-        return {"error": "missing required keys"}
+    }, ignore_extra_keys=False)
+
+    # Validate user data
+    try:
+        result = user_schema.validate(user_data)
+        user_data = result
+    except Exception as error:
+        return {"error": f"invalid user data: {error}"}
     
     # mongodb-database connection
     mongodb_connection = MongoClient(MONGODB_SERVER_URI, serverSelectionTimeoutMS=500)
