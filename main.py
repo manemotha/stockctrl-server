@@ -1,10 +1,20 @@
 from flask import Flask
 from src.routes.authentication_routes import authentication_routes
+from src.config import DEBUG_ENABLED
 
-app = Flask(__name__)
+def create_app():
+    """
+    Create and configure the Flask application.
+    """
+    app = Flask(__name__)
+    app.config['DEBUG'] = DEBUG_ENABLED
 
-# [routes] authentication
-app.register_blueprint(authentication_routes)
+    # Register blueprints
+    app.register_blueprint(authentication_routes)
+
+    return app
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app = create_app()
+    # Run the application
+    app.run()
