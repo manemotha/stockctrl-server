@@ -17,7 +17,7 @@ A robust stock management solution designed to streamline inventory & cash-regis
 ## Getting Started
 
 ### Run Server
-Replace variable `mongodb_server_url` in `/utils/const_variables.py` with the **mongodb** connection string and run `main.py` file to start the server.
+Replace variable `MONGODB_SERVER_URI` in `/src/config.py` with the **mongodb** connection string and run `main.py` file to start the server.
 
 ### Usage Example
 Use Postman (an API testing tool) to generate user-account.  
