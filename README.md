@@ -18,6 +18,10 @@ A robust stock management solution designed to streamline inventory & cash-regis
 
 ## Getting Started
 
+### Install Requirements  
+
+Install project dependencies using `pip install -r requirements.txt`
+
 ### Run Server
 
 Replace variable `MONGODB_SERVER_URI` in `/src/config.py` with the **mongodb** connection string and run `main.py` file to start the server.
