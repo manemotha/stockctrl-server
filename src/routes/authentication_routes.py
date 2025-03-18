@@ -1,12 +1,8 @@
-from flask import Blueprint, request
-from pymongo import MongoClient
-import pymongo
+from flask import Blueprint, request, current_app
 import json
 import bcrypt
 import uuid
-from src.config import MONGODB_SERVER_URI
 from src.utils.input_handler import *
-from schema import Schema, And, Use, Optional
 from schema import Schema, And, Use, Optional
 
 authentication_routes = Blueprint("authentication_routes", __name__)
@@ -64,14 +60,11 @@ def signup():
     except Exception as error:
         return {"error": f"invalid user data: {error}"}
     
-    # mongodb-database connection
-    mongodb_connection = MongoClient(MONGODB_SERVER_URI, serverSelectionTimeoutMS=500)
-        
-    # handle mongodb-database connection error
-    try:
-        mongodb_connection.server_info()
-    except pymongo.errors.ConnectionFailure:
-        return {"result": "failed connecting to mongodb-database"}
+    # get mongodb-database connection from app.extensions
+    # app.extension exposed in main.py
+    mongodb_connection = current_app.extensions['pymongo']
+    
+    # TODO: mongodb-database connection error handling
     
     # [ensure] username is valid
     username_validation_result = validate_username(user_data["username"])
@@ -79,7 +72,7 @@ def signup():
         return username_validation_result
     
     # check if username already exists
-    if mongodb_connection.stockctrl.profiles.find_one({"username":user_data["username"]}):
+    if mongodb_connection.db.profiles.find_one({"username":user_data["username"]}):
         return {"error": "account with same username exists"}
     
     # [ensure] password is type:string
@@ -101,13 +94,9 @@ def signup():
         # handle error when inserting data into database
         try:
             # insert user_data into mongodb-database
-            mongodb_connection.stockctrl.profiles.insert_one(user_data)
-            
-            # close mongodb-database connection
-            mongodb_connection.close()
-            
-        except:
-            return {"error": "failed inserting object into mongodb-database"}
+            mongodb_connection.db.profiles.insert_one(user_data)
+        except Exception as error:
+            return {"error": f"database error: {error}"}
         
         return {"response":"account generated"}
     
