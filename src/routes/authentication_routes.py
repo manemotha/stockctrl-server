@@ -4,7 +4,7 @@ import bcrypt
 import uuid
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
-import time
+import asyncio
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
@@ -116,7 +116,7 @@ def signup():
         return pwd_validation_result
 
 @authentication_routes.route('/authentication/login', methods=['POST'])
-def login():
+async def login():
     """
     # Login
     **Authenticate user and generate login token**.
@@ -156,7 +156,7 @@ def login():
     
     # ensure user_db_data is valid
     if not user_db_data or not isinstance(user_db_data, dict):
-        time.sleep(1.5) # delay response by 1.5 seconds
+        await asyncio.sleep(1.5) # delay response by 1.5 seconds
         return {"error": "invalid username or password"}
     
     # compare user password with hashed password
@@ -178,5 +178,5 @@ def login():
         session["username"] = user_login_data["username"]
         return {"response": "login successful"}
     else:
-        time.sleep(1.5) # delay response by 1.5 seconds
+        await asyncio.sleep(1.5) # delay response by 1.5 seconds
         return {"error": "invalid username or password"}
