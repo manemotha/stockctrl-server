@@ -28,7 +28,7 @@ Replace variable `MONGODB_SERVER_URI` in `/src/config.py` with the **mongodb** c
 
 ### Usage Example
 
-Use Postman (an API testing tool) to generate user-account.  
+Use [Postman](https://www.postman.com/downloads/) (an API testing tool) to generate user-account.  
 > Format : `JSON` Method : `PUT` Route : `/authentication/signup`
 
 ```{
