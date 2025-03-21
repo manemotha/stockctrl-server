@@ -1,3 +1,6 @@
+from flask import current_app, request, session
+
+
 def validate_password(password: str):
     """
     # Validate Password
@@ -56,3 +59,48 @@ def validate_username(username: str):
         return "valid username"
     else:
         return {"error": "username minimum number of characters required is 5 chars"}
+
+def validate_session_token(f):
+    """
+    ## Ensure token authorization to sensitive routes.
+    
+    Decorator function called before secured routes that demands  
+    token authentication.
+    
+    **Usage Example:**
+    > `@authentication_routes.route('/login', methods=['POST'])`  
+    > -> `@validate_session_token`  
+    > `def login():`
+    
+    Return: `"valid token"` or `"invalid token"`
+    """
+    def decorated_function(*args, **kwargs):
+        # get mongodb-database connection from app.extensions
+        # app.extension exposed in main.py
+        mongodb_connection = current_app.extensions['pymongo']
+        
+        try:
+            # assign session data to variables
+            username = session['username']
+            session_token = session['token']
+            
+        except KeyError:
+            return {'error': 'invalid session token'}
+        
+        # find user with matching session_token from database
+        user_db_data = mongodb_connection.db.profiles.find_one(
+            {"username": username, "sessions_token": {"$elemMatch": {"$eq": session_token}}}
+        )
+        
+        # if user is not in database
+        if not user_db_data or not isinstance(user_db_data, dict):
+            # remove username and token from user cookies
+            session.pop('username', None)
+            session.pop('token', None)
+            # function called from sensitive route
+            return {'error': 'invalid session token'}
+        
+        # token is valid, proceed to the targeted route
+        return f(*args, **kwargs)
+    
+    return decorated_function

@@ -8,6 +8,17 @@ import time
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
+@authentication_routes.route('/authentication/session_token/validate', methods=['GET'])
+@validate_session_token
+def validate_token():
+    """
+    # Validate Token
+    **Validate user token**.
+    
+    Return: `"response": "valid token"`
+    """
+    return {"response": "valid token"}
+
 @authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
     """
