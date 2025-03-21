@@ -1,4 +1,4 @@
-from flask import current_app, request, session
+from flask import current_app, session
 
 
 def validate_password(password: str):
