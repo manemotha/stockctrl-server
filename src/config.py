@@ -4,3 +4,5 @@ MONGODB_SERVER_URI: str = "mongodb://localhost:27017/stockctrl"
 
 # flask application configurations
 DEBUG_ENABLED: bool = True
+# secret key for session management
+SECRET_KEY: str = "YOUR_SECRET$KEY"

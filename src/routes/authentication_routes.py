@@ -1,9 +1,10 @@
-from flask import Blueprint, request, current_app
+from flask import Blueprint, request, current_app, session
 import json
 import bcrypt
 import uuid
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
+import time
 
 authentication_routes = Blueprint("authentication_routes", __name__)
 
@@ -102,3 +103,69 @@ def signup():
     
     else:
         return pwd_validation_result
+
+@authentication_routes.route('/authentication/login', methods=['POST'])
+def login():
+    """
+    # Login
+    **Authenticate user and generate login token**.
+    
+    Request data is sent in containing the following keys:
+    - username:
+    - password:
+    
+    Return: `"response": "login successful"` and generate a token in user cookies
+    """
+
+    # handle data from request
+    try:
+        user_login_data = json.loads(request.data)
+    except json.decoder.JSONDecodeError as error:
+        return {"error": f"{error}"}
+    
+    # define schema for login data validation
+    user_schema = Schema({
+        'username': And(str, len, Use(str.lower)),
+        'password': And(str, len)
+    }, ignore_extra_keys=False)
+    
+    # validate login data
+    try:
+        result = user_schema.validate(user_login_data)
+        user_login_data = result
+    except Exception as error:
+        return {"error": f"invalid user data: {error}"}
+    
+    # get mongodb-database connection from app.extensions
+    # app.extension exposed in main.py
+    mongodb_connection = current_app.extensions['pymongo']
+    
+    # get user data from database
+    user_db_data = mongodb_connection.db.profiles.find_one({"username": user_login_data["username"]})
+    
+    # ensure user_db_data is valid
+    if not user_db_data or not isinstance(user_db_data, dict):
+        time.sleep(1.5) # delay response by 1.5 seconds
+        return {"error": "invalid username or password"}
+    
+    # compare user password with hashed password
+    if bcrypt.checkpw(user_login_data["password"].encode("utf-8"), user_db_data["password"]):
+        
+        # generate user token
+        session_token = str(uuid.uuid4())
+        
+        # store user token in database
+        # token is unique for each user session
+        mongodb_connection.db.profiles.update_one(
+            {"username": user_login_data["username"]},
+            {"$addToSet": {"sessions_token": {"$each": [session_token]}}},
+            upsert=True
+        )
+
+        # add session_token and username to user session cookies
+        session["token"] = session_token
+        session["username"] = user_login_data["username"]
+        return {"response": "login successful"}
+    else:
+        time.sleep(1.5) # delay response by 1.5 seconds
+        return {"error": "invalid username or password"}
