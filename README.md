@@ -1,6 +1,6 @@
 # Stockctrl Server
 
-A robust stock management solution designed to streamline inventory & cash-register operations.
+A robust stock management solution designed to streamline inventory & point-of-sale (POS) operations.
 
 ## Resources
 
