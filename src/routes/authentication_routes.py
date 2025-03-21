@@ -6,6 +6,10 @@ from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
 import asyncio
 
+# create authentication_routes blueprint
+# this blueprint will be registered in "main.py"
+# and will expose the routes defined in this file
+# to the main application
 authentication_routes = Blueprint("authentication_routes", __name__)
 
 @authentication_routes.route('/authentication/session_token/validate', methods=['GET'])
