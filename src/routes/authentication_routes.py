@@ -4,6 +4,8 @@ import bcrypt
 import uuid
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
+from src.response_codes import *
+from src.utils.controllers import stockctrl_response
 import asyncio
 
 # create authentication_routes blueprint
@@ -21,7 +23,7 @@ def validate_token():
     
     Return: `"response": "valid token"`
     """
-    return {"response": "valid token"}
+    return stockctrl_response("Valid token", 200)
 
 @authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
@@ -49,7 +51,7 @@ def signup():
     try:
         user_data = json.loads(request.data)
     except json.decoder.JSONDecodeError as error:
-        return {"error":f"{error}"}
+        return stockctrl_response(error, 400)
     
     # Define schema for user data validation
     user_schema = Schema({
@@ -74,7 +76,7 @@ def signup():
         # generate user UUID
         user_data["_id"] = str(uuid.uuid4())
     except Exception as error:
-        return {"error": f"invalid user data: {error}"}
+        return stockctrl_response(error, 400)
     
     # get mongodb-database connection from app.extensions
     # app.extension exposed in main.py
@@ -89,7 +91,7 @@ def signup():
     
     # check if username already exists
     if mongodb_connection.db.profiles.find_one({"username":user_data["username"]}):
-        return {"error": "account with same username exists"}
+        return stockctrl_response("Account with this username already exists", 400)
     
     # [ensure] password is type:string
     user_password = user_data["password"]
@@ -112,7 +114,7 @@ def signup():
             # insert user_data into mongodb-database
             mongodb_connection.db.profiles.insert_one(user_data)
         except Exception as error:
-            return {"error": f"database error: {error}"}
+            return stockctrl_response(error, 500)
         
         return {"response":"account generated"}
     
@@ -136,7 +138,7 @@ async def login():
     try:
         user_login_data = json.loads(request.data)
     except json.decoder.JSONDecodeError as error:
-        return {"error": f"{error}"}
+        return stockctrl_response(error, 400)
     
     # define schema for login data validation
     user_schema = Schema({
@@ -149,7 +151,7 @@ async def login():
         result = user_schema.validate(user_login_data)
         user_login_data = result
     except Exception as error:
-        return {"error": f"invalid user data: {error}"}
+        return stockctrl_response(error, 400)
     
     # get mongodb-database connection from app.extensions
     # app.extension exposed in main.py
@@ -161,7 +163,7 @@ async def login():
     # ensure user_db_data is valid
     if not user_db_data or not isinstance(user_db_data, dict):
         await asyncio.sleep(1.5) # delay response by 1.5 seconds
-        return {"error": "invalid username or password"}
+        return stockctrl_response("Invalid username or password", 401)
     
     # compare user password with hashed password
     if bcrypt.checkpw(user_login_data["password"].encode("utf-8"), user_db_data["password"]):
@@ -180,7 +182,7 @@ async def login():
         # add session_token and username to user session cookies
         session["token"] = session_token
         session["username"] = user_login_data["username"]
-        return {"response": "login successful"}
+        return stockctrl_response("Login successful", 200)
     else:
         await asyncio.sleep(1.5) # delay response by 1.5 seconds
-        return {"error": "invalid username or password"}
+        return stockctrl_response("Invalid username or password", 401)

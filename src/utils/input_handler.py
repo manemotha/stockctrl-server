@@ -1,4 +1,5 @@
 from flask import current_app, session
+from src.utils.controllers import stockctrl_response
 
 
 def validate_password(password: str):
@@ -85,7 +86,7 @@ def validate_session_token(f):
             session_token = session['token']
             
         except KeyError:
-            return {'error': 'invalid session token'}
+            return stockctrl_response("invalid session token", 401)
         
         # find user with matching session_token from database
         user_db_data = mongodb_connection.db.profiles.find_one(
@@ -98,7 +99,7 @@ def validate_session_token(f):
             session.pop('username', None)
             session.pop('token', None)
             # function called from sensitive route
-            return {'error': 'invalid session token'}
+            return stockctrl_response("invalid session token", 401)
         
         # token is valid, proceed to the targeted route
         return f(*args, **kwargs)
