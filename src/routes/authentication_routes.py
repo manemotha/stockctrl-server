@@ -4,7 +4,6 @@ import bcrypt
 import uuid
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
-from src.response_codes import *
 from src.utils.controllers import stockctrl_response
 import asyncio
 
