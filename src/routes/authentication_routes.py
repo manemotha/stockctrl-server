@@ -86,7 +86,7 @@ def signup():
     # [ensure] username is valid
     username_validation_result = validate_username(user_data["username"])
     if username_validation_result != "valid username":
-        return http_response(message=username_validation_result["error"], status_code=400)
+        return http_response(message=username_validation_result, status_code=400)
     
     # check if username already exists
     if mongodb_connection.db.profiles.find_one({"username":user_data["username"]}):
@@ -101,22 +101,22 @@ def signup():
     pwd_validation_result = validate_password(user_password)
     
     if pwd_validation_result == "valid password":
-            
+
         # encrypt user password
         hashed_password: bytes = bcrypt.hashpw(user_password.encode("utf-8"), bcrypt.gensalt())
-        
+
         # insert handshed password into prepared user_data
         user_data["password"] = hashed_password
-        
+
         # handle error when inserting data into database
         try:
             # insert user_data into mongodb-database
             mongodb_connection.db.profiles.insert_one(user_data)
         except Exception as error:
             return http_response(message=str(error), status_code=500)
-        
+
         return {"response":"account generated"}
-    
+
     else:
         return http_response(message=pwd_validation_result, status_code=400)
 
