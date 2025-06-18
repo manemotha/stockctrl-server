@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from config import Config
 from flask_pymongo import PyMongo
-from src.routes.authentication_routes import authentication_routes
+from src.routes.admin_routes import admin_routes
 from dotenv import load_dotenv
 
 def create_app():
@@ -34,7 +34,7 @@ def create_app():
     app.extensions['pymongo'] = mongo
 
     # Register blueprints
-    app.register_blueprint(authentication_routes)
+    app.register_blueprint(admin_routes)
 
     return app
 

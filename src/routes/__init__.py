@@ -1,1 +1,1 @@
-from .authentication_routes import *
+from .admin_routes import *

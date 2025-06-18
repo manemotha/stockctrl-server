@@ -8,13 +8,13 @@ from schema import Schema, And, Use, Optional
 from src.utils.controllers import http_response
 import asyncio
 
-# create authentication_routes blueprint
+# create admin_routes blueprint
 # this blueprint will be registered in "main.py"
 # and will expose the routes defined in this file
 # to the main application
-authentication_routes = Blueprint("authentication_routes", __name__)
+admin_routes = Blueprint("admin_routes", __name__)
 
-@authentication_routes.route('/authentication/session_token/validate', methods=['GET'])
+@admin_routes.route('/authentication/session_token/validate', methods=['GET'])
 @jwt_required(locations=['cookies'])
 def validate_token():
     """
@@ -28,7 +28,7 @@ def validate_token():
     else:
         return http_response(message="invalid session_token", status_code=401)
 
-@authentication_routes.route('/authentication/signup', methods=['POST'])
+@admin_routes.route('/authentication/signup', methods=['POST'])
 def signup():
     """
     # Signup
@@ -118,7 +118,7 @@ def signup():
     else:
         return http_response(message=pwd_validation_result, status_code=400)
 
-@authentication_routes.route('/authentication/login', methods=['POST'])
+@admin_routes.route('/authentication/login', methods=['POST'])
 async def login():
     """
     # Login
