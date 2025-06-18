@@ -4,7 +4,7 @@ import bcrypt
 import uuid
 from src.utils.input_handler import *
 from schema import Schema, And, Use, Optional
-from src.utils.controllers import stockctrl_response
+from src.utils.controllers import http_response
 import asyncio
 
 # create authentication_routes blueprint
@@ -22,7 +22,7 @@ def validate_token():
     
     Return: `"response": "valid token"`
     """
-    return stockctrl_response("Valid token", 200)
+    return http_response(message="Valid token", status_code=200)
 
 @authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
@@ -50,7 +50,7 @@ def signup():
     try:
         user_data = json.loads(request.data)
     except json.decoder.JSONDecodeError as error:
-        return stockctrl_response(error, 400)
+        return http_response(message=str(error), status_code=400)
     
     # Define schema for user data validation
     user_schema = Schema({
@@ -75,7 +75,7 @@ def signup():
         # generate user UUID
         user_data["_id"] = str(uuid.uuid4())
     except Exception as error:
-        return stockctrl_response(error, 400)
+        return http_response(message=str(error), status_code=400)
     
     # get mongodb-database connection from app.extensions
     # app.extension exposed in main.py
@@ -86,11 +86,11 @@ def signup():
     # [ensure] username is valid
     username_validation_result = validate_username(user_data["username"])
     if username_validation_result != "valid username":
-        return username_validation_result
+        return http_response(message=username_validation_result["error"], status_code=400)
     
     # check if username already exists
     if mongodb_connection.db.profiles.find_one({"username":user_data["username"]}):
-        return stockctrl_response("Account with this username already exists", 400)
+        return http_response(message="Account with this username already exists", status_code=400)
     
     # [ensure] password is type:string
     user_password = user_data["password"]
@@ -113,12 +113,12 @@ def signup():
             # insert user_data into mongodb-database
             mongodb_connection.db.profiles.insert_one(user_data)
         except Exception as error:
-            return stockctrl_response(error, 500)
+            return http_response(message=str(error), status_code=500)
         
         return {"response":"account generated"}
     
     else:
-        return pwd_validation_result
+        return http_response(message=pwd_validation_result, status_code=400)
 
 @authentication_routes.route('/authentication/login', methods=['POST'])
 async def login():
@@ -137,7 +137,7 @@ async def login():
     try:
         user_login_data = json.loads(request.data)
     except json.decoder.JSONDecodeError as error:
-        return stockctrl_response(error, 400)
+        return http_response(message=str(error), status_code=400)
     
     # define schema for login data validation
     user_schema = Schema({
@@ -150,7 +150,7 @@ async def login():
         result = user_schema.validate(user_login_data)
         user_login_data = result
     except Exception as error:
-        return stockctrl_response(error, 400)
+        return http_response(message=str(error), status_code=400)
     
     # get mongodb-database connection from app.extensions
     # app.extension exposed in main.py
@@ -162,7 +162,7 @@ async def login():
     # ensure user_db_data is valid
     if not user_db_data or not isinstance(user_db_data, dict):
         await asyncio.sleep(1.5) # delay response by 1.5 seconds
-        return stockctrl_response("Invalid username or password", 401)
+        return http_response(message="Invalid username or password", status_code=401)
     
     # compare user password with hashed password
     if bcrypt.checkpw(user_login_data["password"].encode("utf-8"), user_db_data["password"]):
@@ -181,7 +181,8 @@ async def login():
         # add session_token and username to user session cookies
         session["token"] = session_token
         session["username"] = user_login_data["username"]
-        return stockctrl_response("Login successful", 200)
+
+        return http_response(message="Login successful", status_code=200)
     else:
         await asyncio.sleep(1.5) # delay response by 1.5 seconds
-        return stockctrl_response("Invalid username or password", 401)
+        return http_response(message="Invalid username or password", status_code=401)

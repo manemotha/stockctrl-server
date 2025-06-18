@@ -16,12 +16,12 @@ Note:
 """
 from flask import jsonify, Response
 
-def stockctrl_response(message: str, status_code: int) -> Response:
+def http_response(message: str, status_code: int) -> Response:
     """
     Generate a response object with the specified status code and response data.
 
     Args:
-        response (str): The response data to be sent to the client.
+        message (str): The response data to be sent to the client.
         status_code (int): The HTTP status code to be included in the response.
 
     Returns:
