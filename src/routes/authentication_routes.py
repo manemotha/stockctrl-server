@@ -1,4 +1,4 @@
-from flask import Blueprint, request, current_app, session
+from flask import Blueprint, request
 import json
 import bcrypt
 import uuid
