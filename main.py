@@ -1,19 +1,24 @@
+import os
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from config import Config
 from flask_pymongo import PyMongo
 from src.routes.authentication_routes import authentication_routes
-from src.config import DEBUG_ENABLED, MONGODB_SERVER_URI, SECRET_KEY
+from dotenv import load_dotenv
 
 def create_app():
     """
     Create and configure the Flask application.
     """
     app = Flask(__name__)
-    app.config['DEBUG'] = DEBUG_ENABLED
-    app.config['MONGO_URI'] = MONGODB_SERVER_URI
-    app.config['SECRET_KEY'] = SECRET_KEY
+
+    # Load environment variables from .env file
+    load_dotenv()
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+    app.config["FLASK_ENV"] = os.getenv("FLASK_ENV", "development")
     app.config.from_object(Config)
     JWTManager(app)
 
