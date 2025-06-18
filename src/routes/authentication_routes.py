@@ -58,13 +58,7 @@ def signup():
         'email': And(str, len),
         'password': And(str, len),
         'name': And(str, len),
-        Optional('phone_number', default=""): And(str, len),
-        'organization': {
-            'name': And(str, len),
-            'type': And(str, len),
-            'industry': And(str, len),
-            Optional('logo', default=""): And(str, len)
-        }
+        Optional('phone_number', default=""): And(str, len)
     }, ignore_extra_keys=False)
 
     # Validate user data
