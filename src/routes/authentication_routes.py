@@ -1,4 +1,5 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import create_access_token, jwt_required, set_access_cookies, get_jwt, get_jwt_identity, decode_token
 import json
 import bcrypt
 import uuid
@@ -14,15 +15,18 @@ import asyncio
 authentication_routes = Blueprint("authentication_routes", __name__)
 
 @authentication_routes.route('/authentication/session_token/validate', methods=['GET'])
-@validate_session_token
+@jwt_required(locations=['cookies'])
 def validate_token():
     """
     # Validate Token
     **Validate user token**.
     
-    Return: `"response": "valid token"`
+    Return: `"response": "valid session_token"` or `"response": "invalid session_token"`
     """
-    return http_response(message="Valid token", status_code=200)
+    if validate_session_token(get_jwt()['jti'], get_jwt_identity()):
+        return http_response(message="valid session_token", status_code=200)
+    else:
+        return http_response(message="invalid session_token", status_code=401)
 
 @authentication_routes.route('/authentication/signup', methods=['POST'])
 def signup():
@@ -160,23 +164,33 @@ async def login():
     
     # compare user password with hashed password
     if bcrypt.checkpw(user_login_data["password"].encode("utf-8"), user_db_data["password"]):
-        
-        # generate user token
-        session_token = str(uuid.uuid4())
-        
+
+        # create session_token using JWT
+        encoded_session_token = create_access_token(identity=str(user_db_data["_id"]), additional_claims={"is_admin": True})
+
+        # decode session token to get additional claims
+        decoded_session_token: dict = decode_token(encoded_session_token)
+
         # store user token in database
         # token is unique for each user session
         mongodb_connection.db.profiles.update_one(
             {"username": user_login_data["username"]},
-            {"$addToSet": {"sessions_token": {"$each": [session_token]}}},
+            {"$addToSet": {"sessions_token": {"$each": [{
+                "jti": decoded_session_token['jti'],
+                "token": encoded_session_token,
+                "user_id": decoded_session_token['sub'],
+                "is_admin": decoded_session_token['is_admin']
+                # TODO: add expiration time for session_token
+            }]}}},
             upsert=True
         )
 
-        # add session_token and username to user session cookies
-        session["token"] = session_token
-        session["username"] = user_login_data["username"]
+        # create response object
+        response = jsonify({"message": "Login successful"})
 
-        return http_response(message="Login successful", status_code=200)
+        # insert session token into response cookies
+        set_access_cookies(response, encoded_session_token)
+        return response, 200
     else:
         await asyncio.sleep(1.5) # delay response by 1.5 seconds
         return http_response(message="Invalid username or password", status_code=401)

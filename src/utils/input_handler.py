@@ -1,5 +1,4 @@
-from flask import current_app, session
-from src.utils.controllers import http_response
+from flask import current_app
 
 
 def validate_password(password: str) -> str:
@@ -63,48 +62,18 @@ def validate_username(username: str) -> str:
         return "username minimum number of characters required is 5 chars"
 
 
-def validate_session_token(f):
-    """
-    ## Ensure token authorization to sensitive routes.
-    
-    Decorator function called before secured routes that demands  
-    token authentication.
-    
-    **Usage Example:**
-    > `@authentication_routes.route('/login', methods=['POST'])`  
-    > -> `@validate_session_token`  
-    > `def login():`
-    
-    Return: `"valid token"` or `"invalid token"`
-    """
-
-    def decorated_function(*args, **kwargs):
+def validate_session_token(jti: str, user_id: str) -> bool:
         # get mongodb-database connection from app.extensions
         # app.extension exposed in main.py
         mongodb_connection = current_app.extensions['pymongo']
 
-        try:
-            # assign session data to variables
-            username = session['username']
-            session_token = session['token']
-
-        except KeyError:
-            return http_response("invalid session token", 401)
-
         # find user with matching session_token from database
         user_db_data = mongodb_connection.db.profiles.find_one(
-            {"username": username, "sessions_token": {"$elemMatch": {"$eq": session_token}}}
+            {"_id": user_id, "sessions_token": {"$elemMatch": {"jti": jti}}}
         )
 
-        # if user is not in database
+        # token is invalid, return error message
         if not user_db_data or not isinstance(user_db_data, dict):
-            # remove username and token from user cookies
-            session.pop('username', None)
-            session.pop('token', None)
-            # function called from sensitive route
-            return http_response("invalid session token", 401)
-
-        # token is valid, proceed to the targeted route
-        return f(*args, **kwargs)
-
-    return decorated_function
+            return False
+        else:
+            return True
