@@ -1,4 +1,19 @@
 import bcrypt
+import secrets
+from datetime import datetime, timezone, timedelta
+
+
+def generate_auth_token() -> dict[str, datetime]:
+    """
+    Generate authentication token with an expiration date.
+
+    **Return:**
+     token (str)\n
+     expires_at (datetime)
+    """
+    token = secrets.token_urlsafe(64)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    return {"token":token, "expires_at":expires_at}
 
 
 def hash_password(password: str) -> bytes:
@@ -6,11 +21,26 @@ def hash_password(password: str) -> bytes:
     Generate hashed password
 
     **Args:**
-    password(str):
+     password (str):
 
-    **Return:** (bytes) bcrypt hashed password
+    **Return:**
+     (bytes) bcrypt hashed password
     """
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+
+def compare_hashed_password(password: str, hashed_password: bytes) -> bool:
+    """
+    Compare a password with a hashed password.
+
+    **Args:**
+     password (str): The plain text password to compare.\n
+     hashed_password (bytes): The hashed password to compare against.
+
+    **Return:**
+     (bool) True | False
+    """
+    return bcrypt.checkpw(password.encode("utf-8"), hashed_password)
 
 
 def validate_password(password: str) -> str:
@@ -18,9 +48,10 @@ def validate_password(password: str) -> str:
     Ensure password is valid and meets authentication requirements.
 
     **Args:**
-    Password(str)
+     Password (str)
 
-    **Return:** True | error: validation error message
+    **Return:**
+     "valid password" | validation error message (str)
     """
 
     # ensure user:password meets requirements
@@ -43,9 +74,10 @@ def validate_username(username: str) -> str:
     Ensure username is valid and meets **SC** requirements.
 
     **Args:**
-    username(str)
+     username (str)
 
-    **Return:** valid username | validation error message
+    **Return:**
+     "valid username" | validation error message (str)
     """
 
     # [ensure] username is type:string
