@@ -31,7 +31,7 @@ Replace variable `MONGODB_SERVER_URI` in `.env` with the **mongodb** connection 
 ### Usage Example
 
 Use [Postman](https://www.postman.com/downloads/) (an API testing tool) to generate user-account.  
-> Format : `JSON` Method : `POST` Route : `/api/admins/session`
+> Format : `JSON` Method : `POST` Route : `/api/admins/create`
 
 ```{
   "username": "tommystone",
