@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from services.auth import *
 from datetime import datetime, timezone
@@ -50,6 +50,12 @@ async def create_admin(payload: AdminSignupModel, request: Request):
         return http_response(message="admin account created", status_code=200)
     else:
         return http_response(message=password_validation_result, status_code=400)
+
+
+@admin_routes.get("/auth_token")
+@validate_auth_token()
+async def auth_token(request: Request):
+    return http_response(message="valid auth_token", status_code=status.HTTP_200_OK)
 
 
 @admin_routes.post("/auth_token")

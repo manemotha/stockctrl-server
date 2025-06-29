@@ -22,6 +22,7 @@ app = FastAPI(
     title="Stockctrl Server",
     description="A robust stock management solution designed to streamline inventory operations.",
     lifespan=lifespan,
+    tz_aware=True,
 )
 
 # Declare server routes
