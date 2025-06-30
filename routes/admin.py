@@ -101,3 +101,17 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
 
     # Return success response with session token
     return JSONResponse(content={"message": "admin auth_token created", "token": token, "is_admin": True}, status_code=status.HTTP_200_OK)
+
+
+@admin_routes.delete("/auth_token")
+@validate_auth_token()
+async def revoke_admin_auth_token(request: Request):
+
+    # Revoke the auth token
+    await revoke_auth_token(request=request, token=request.app.state.token)
+
+    # Remove admin_id and token from the app state
+    request.app.state.admin_id = None
+    request.app.state.token = None
+
+    return http_response(message="revoked auth_token", status_code=status.HTTP_200_OK)

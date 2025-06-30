@@ -71,6 +71,24 @@ def validate_auth_token():
     return decorator
 
 
+async def revoke_auth_token(request: Request, token: str):
+    """
+    Revoke a session token by setting its 'revoked' status to True.
+
+    **Args:**
+     token (str)\n
+     request (FastAPI Request)
+    """
+    # MongoDB: assign auth_tokens collection/table
+    auth_tokens_table = request.app.state.mongo_database["session_tokens"]
+
+    # MongoDB: set session_token revoked to true
+    await auth_tokens_table.update_one(
+        {"token": token},
+        {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}}
+    )
+
+
 def hash_password(password: str) -> bytes:
     """
     Generate hashed password
