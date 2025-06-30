@@ -16,7 +16,6 @@ def generate_auth_token() -> dict[str, datetime]:
     """
     token = secrets.token_urlsafe(64)
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
-    print(f"expires_at: {expires_at}")
     return {"token":token, "expires_at":expires_at}
 
 
