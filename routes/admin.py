@@ -100,7 +100,7 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
     await session_tokens_table.insert_one(session_token_data)
 
     # Return success response with session token
-    return JSONResponse(content={"message": "admin auth_token created", "token": token, "is_admin": True}, status_code=status.HTTP_200_OK)
+    return JSONResponse(content={"message": "admin auth_token created", "token": token, "is_admin": True}, status_code=status.HTTP_201_CREATED)
 
 
 @admin_routes.delete("/auth_token")
