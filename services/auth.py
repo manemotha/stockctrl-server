@@ -54,10 +54,6 @@ def validate_auth_token():
             # Assign: auth_token expiration date
             expires_at = user_db_data["expires_at"]
 
-            # Validate: database time is in UTC
-            if expires_at.tzinfo is None:
-                expires_at = expires_at.replace(tzinfo=timezone.utc)
-
             # Validate: token is expired
             if expires_at < datetime.now(timezone.utc):
                 return http_response(message="expired auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
