@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from models.business import CreateBusinessModel
 from services.auth import *
+from validators.vauthtoken import validate_admin_token
 from validators.vbusiness import validate_business_name
 from datetime import datetime, timezone
 from utils.controllers import http_response
@@ -9,7 +10,7 @@ business_routes = APIRouter()
 
 
 @business_routes.post("/create")
-@validate_auth_token()
+@validate_admin_token()
 async def create_new_business(request: Request, payload: CreateBusinessModel):
 
     # Read the payload and convert it to a dictionary

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from services.auth import *
+from validators.vauthtoken import validate_admin_token
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from models.admin import *
@@ -53,7 +54,7 @@ async def create_admin(payload: AdminSignupModel, request: Request):
 
 
 @admin_routes.get("/auth_token")
-@validate_auth_token()
+@validate_admin_token()
 async def auth_token(request: Request):
     return http_response(message="valid auth_token", status_code=status.HTTP_200_OK)
 
@@ -104,7 +105,7 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
 
 
 @admin_routes.delete("/auth_token")
-@validate_auth_token()
+@validate_admin_token()
 async def revoke_admin_auth_token(request: Request):
 
     # Revoke the auth token
