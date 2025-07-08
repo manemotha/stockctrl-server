@@ -7,6 +7,7 @@ from utils.controllers import http_response
 from models.admin import *
 import asyncio
 import pymongo.errors
+from typing import Any
 
 admin_routes = APIRouter()
 
@@ -15,7 +16,7 @@ admin_routes = APIRouter()
 async def create_admin(payload: AdminSignupModel, request: Request):
 
     # Read the payload and convert it to a dictionary
-    admin_data: dict = payload.model_dump()
+    admin_data: dict[str, Any] = payload.model_dump()
 
     # MongoDB: Declare admins collection/table
     admins_table = request.app.state.mongo_database["admins"]
@@ -63,7 +64,7 @@ async def auth_token(request: Request):
 async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
 
     # Read the payload and convert it to a dictionary
-    admin_data: dict = payload.model_dump()
+    admin_data: dict[str, Any] = payload.model_dump()
 
     # MongoDB: Declare admins collection/table
     admins_table = request.app.state.mongo_database["admins"]

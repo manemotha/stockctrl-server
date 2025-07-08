@@ -1,10 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from models.business import CreateBusinessModel
 from services.auth import *
 from validators.vauthtoken import validate_admin_token
 from validators.vbusiness import validate_business_name
 from datetime import datetime, timezone
 from utils.controllers import http_response
+from typing import Any
 
 business_routes = APIRouter()
 
@@ -14,7 +15,7 @@ business_routes = APIRouter()
 async def create_new_business(request: Request, payload: CreateBusinessModel):
 
     # Read the payload and convert it to a dictionary
-    business_data: dict = payload.model_dump()
+    business_data: dict[str, Any] = payload.model_dump()
 
     # Assign business name in lowercase
     business_name = business_data["name"].lower()

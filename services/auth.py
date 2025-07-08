@@ -4,7 +4,7 @@ import secrets
 import bcrypt
 
 
-def generate_auth_token() -> dict[str, datetime]:
+def generate_auth_token() -> dict[str, str | datetime]:
     """
     Generate authentication token with an expiration date.
 
