@@ -12,7 +12,7 @@ from typing import Any
 admin_routes = APIRouter()
 
 
-@admin_routes.post("/create")
+@admin_routes.post("/")
 async def create_admin(payload: AdminSignupModel, request: Request):
 
     # Read the payload and convert it to a dictionary
@@ -54,13 +54,13 @@ async def create_admin(payload: AdminSignupModel, request: Request):
         return http_response(message=password_validation_result, status_code=400)
 
 
-@admin_routes.get("/auth_token")
+@admin_routes.get("/token")
 @validate_admin_token()
 async def auth_token(request: Request):
     return http_response(message="valid auth_token", status_code=status.HTTP_200_OK)
 
 
-@admin_routes.post("/auth_token")
+@admin_routes.post("/token")
 async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
 
     # Read the payload and convert it to a dictionary
@@ -105,7 +105,7 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
     return JSONResponse(content={"message": "admin auth_token created", "token": token, "is_admin": True}, status_code=status.HTTP_201_CREATED)
 
 
-@admin_routes.delete("/auth_token")
+@admin_routes.delete("/token")
 @validate_admin_token()
 async def revoke_admin_auth_token(request: Request):
 

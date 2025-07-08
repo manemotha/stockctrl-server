@@ -10,7 +10,7 @@ from typing import Any
 business_routes = APIRouter()
 
 
-@business_routes.post("/create")
+@business_routes.post("/")
 @validate_admin_token()
 async def create_new_business(request: Request, payload: CreateBusinessModel):
 

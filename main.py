@@ -27,8 +27,8 @@ app = FastAPI(
 )
 
 # Declare server routes
-app.include_router(admin_routes, prefix="/api/admins", tags=["admins"])
-app.include_router(business_routes, prefix="/api/businesses", tags=["businesses"])
+app.include_router(admin_routes, prefix="/api/admin", tags=["admin"])
+app.include_router(business_routes, prefix="/api/business", tags=["business"])
 
 if __name__ == "__main__":
     run("main:app", host="localhost", port=8000, reload=True)
