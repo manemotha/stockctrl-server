@@ -35,7 +35,7 @@ async def create_admin(payload: AdminSignupModel, request: Request):
 
     # Response for when admin with username exists
     if admin_exists_result:
-        return http_response(message="account with username exists", status_code=400)
+        return http_response(message="account with username exists", status_code=status.HTTP_409_CONFLICT)
 
     # Validate: password
     user_password = admin_data["password"]
