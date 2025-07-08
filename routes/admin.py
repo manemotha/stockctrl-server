@@ -50,9 +50,9 @@ async def create_admin(payload: AdminSignupModel, request: Request):
 
         # MongoDB: insert admin_data
         await admins_table.insert_one(admin_data)
-        return http_response(message="admin account created", status_code=200)
+        return http_response(message="admin account created", status_code=status.HTTP_201_CREATED)
     else:
-        return http_response(message=password_validation_result, status_code=400)
+        return http_response(message=password_validation_result, status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @admin_routes.get("/token")
