@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, EmailStr, constr
 
 
-class AddEmployeeModel(BaseModel):
+class EmployeeSignupModel(BaseModel):
     username: str = Field(..., min_length=1, max_length=20)
     password: str
     business_id: str = Field(..., min_length=1, max_length=50)

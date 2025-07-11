@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from models.employee import AddEmployeeModel, EmployeeSigninModel
+from models.employee import EmployeeSigninModel, EmployeeSignupModel
 from services.auth import *
 from validators.vauthtoken import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
@@ -16,7 +16,7 @@ employee_routes = APIRouter()
 
 @employee_routes.post("/")
 @validate_admin_token()
-async def add_new_employee(request: Request, payload: AddEmployeeModel):
+async def add_new_employee(request: Request, payload: EmployeeSignupModel):
 
     # Read the payload and convert it to a dictionary
     employee_data: dict[str, Any] = payload.model_dump()
