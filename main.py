@@ -1,19 +1,27 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from db import mongo_client
 from routes.admin import admin_routes
 from routes.business import business_routes
 from routes.employee import employee_routes
+from pymongo import AsyncMongoClient
 from uvicorn import run
+import os
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # [SERVER STARTUP]
+    # Init: the MongoDB client with the URI from .env variables
+    # The .env file contains default MONGO_URI="mongodb://localhost:27017"
+    # Replace variable with your own custom MONGODB URI
+    mongo_client = AsyncMongoClient(os.environ.get("MONGO_URI"), tz_aware=True)
 
     # Store MongoDB client & database into FastAPI application state
     app.state.mongo_client = mongo_client # client
     app.state.mongo_database = mongo_client["stockctrl"] # database
+    # [END OF SERVER STARTUP]
     yield
 
+    # [SERVER SHUTDOWN]
     # Close the MongoDB mongo_client when the application shuts down
     await mongo_client.close()
 
