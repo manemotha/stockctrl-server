@@ -4,6 +4,7 @@ from models.employee import EmployeeSigninModel, EmployeeSignupModel
 from services.auth import *
 from validators.vauthtoken import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
+from validators.vemployee import validate_employee_token
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from typing import Any
@@ -144,3 +145,9 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     await session_tokens_table.insert_one(session_token_data)
 
     return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)
+
+
+@employee_routes.get("/token")
+@validate_employee_token()
+async def validate_employee_auth_token(request: Request):
+    return http_response(message="valid employee auth_token", status_code=status.HTTP_200_OK)
