@@ -1,0 +1,6 @@
+# IGNORE: PYTHON DIRECTORIES
+__pycache__/
+*.pyc
+
+# IGNORE: SYSTEM SECRET FILES
+.env
