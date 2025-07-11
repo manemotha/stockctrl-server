@@ -2,6 +2,7 @@ from fastapi import Request
 from datetime import datetime, timezone, timedelta
 import secrets
 import bcrypt
+from bson import ObjectId
 
 
 def generate_auth_token() -> dict[str, str | datetime]:
@@ -32,6 +33,25 @@ async def revoke_auth_token(request: Request, token: str):
     await auth_tokens_table.update_one(
         {"token": token},
         {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}}
+    )
+
+
+async def replace_admin_auth_token(request: Request, employee_id: ObjectId):
+    """
+    Override admin token with employee token for future requests.
+    Current session is now authorized to the employee.
+
+    **Args:**
+     request (FastAPI Request)
+     admin_token (str) : The token for which to replace.
+    """
+    # MongoDB: assign auth_tokens collection/table
+    session_tokens_table = request.app.state.mongo_database["session_tokens"]
+
+    # MongoDB: set session_token replaced to true
+    await session_tokens_table.update_one(
+        {"token": request.app.state.token},
+        {"$set": {"is_replaced": True, "replaced_by": employee_id, "replaced_at": datetime.now(timezone.utc)}}
     )
 
 

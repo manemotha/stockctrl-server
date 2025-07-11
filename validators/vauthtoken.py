@@ -30,11 +30,15 @@ def validate_admin_token():
 
             # Validate: token is invalid
             if not user_db_data or not isinstance(user_db_data, dict):
-                return http_response(message="invalid auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
+                return http_response(message="invalid admin auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
 
             # Validate: token is revoked
             if user_db_data["revoked"] and user_db_data["revoked_at"]:
-                return http_response(message="revoked auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
+                return http_response(message="revoked admin auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
+
+            # Validate: token is replaced
+            if user_db_data["is_replaced"] and user_db_data["replaced_at"] and user_db_data["replaced_by"]:
+                return http_response(message="replaced admin auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
 
             # Assign: auth_token expiration date
             expires_at = user_db_data["expires_at"]

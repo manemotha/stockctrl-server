@@ -91,6 +91,9 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
         "admin_id": admin_db_data["_id"],
         "created_at": datetime.now(timezone.utc),
         "expires_at": expires_at,
+        "is_replaced": False,
+        "replaced_at" : None,
+        "replaced_by": None,
         "revoked": False,
         "revoked_at": None,
         "is_admin": True

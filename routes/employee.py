@@ -138,6 +138,9 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
         "is_admin": False
     }
 
+    # Replace admin token with employee token
+    await replace_admin_auth_token(request, session_token_data["employee_id"])
+
     # MongoDB: assign session_tokens collection/table
     session_tokens_table = request.app.state.mongo_database["session_tokens"]
 
