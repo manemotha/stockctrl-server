@@ -1,5 +1,6 @@
 from fastapi import APIRouter, status
-from models.employee import AddEmployeeModel
+from fastapi.responses import JSONResponse
+from models.employee import AddEmployeeModel, EmployeeSigninModel
 from services.auth import *
 from validators.vauthtoken import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
@@ -7,6 +8,8 @@ from datetime import datetime, timezone
 from utils.controllers import http_response
 from typing import Any
 from bson import ObjectId, errors as bson_error
+import asyncio
+import time
 
 employee_routes = APIRouter()
 
@@ -77,3 +80,69 @@ async def add_new_employee(request: Request, payload: AddEmployeeModel):
     await employees_table.insert_one(employee_data)
 
     return http_response(message="employee created", status_code=status.HTTP_201_CREATED)
+
+
+@employee_routes.post("/token")
+@validate_admin_token()
+async def create_employee_auth_token(request: Request, payload: EmployeeSigninModel):
+
+    # Read the payload and convert it to a dictionary
+    employee_data: dict[str, Any] = payload.model_dump()
+
+    # MongoDB: assign employees collection/table
+    employees_table = request.app.state.mongo_database["employees"]
+
+    # MongoDB: get employee data from database
+    employee_db_data = await employees_table.find_one({"admin_id": request.app.state.admin_id, "username": employee_data["username"]})
+
+    # The amount of seconds to delay response
+    delay_duration: float = 1.5
+
+    # Validate: username
+    if not employee_db_data or not isinstance(employee_db_data, dict):
+        await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
+        return http_response(message="invalid credentials", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    # Check how much time it too for compare_hashed_password to complete
+    # Subtract time_elapsed from delay_duration if time_elapsed is less < than delay_duration
+    start_time = time.perf_counter()
+
+    # Bcrypt: compare passwords
+    comparison_result = compare_hashed_password(employee_data["password"], employee_db_data["password"])
+
+    # Time Bcrypt took to complete
+    elapsed_time = time.perf_counter() - start_time
+
+    # Validate: password
+    if not comparison_result:
+        if elapsed_time < delay_duration:
+            await asyncio.sleep(delay_duration - elapsed_time)
+        else:
+            await asyncio.sleep(delay_duration)
+        return http_response(message="invalid credentials", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    # Generate token
+    token, expires_at = generate_auth_token()["token"], generate_auth_token()["expires_at"]
+
+    try:
+        session_token_data = {
+            "token": token,
+            "employee_id": employee_db_data["_id"],
+            "admin_id": employee_db_data["admin_id"],
+            "business_id": employee_db_data["business_id"],
+            "created_at": datetime.now(timezone.utc),
+            "expires_at": expires_at,
+            "revoked": False,
+            "revoked_at": None,
+            "is_admin": False
+        }
+
+        # MongoDB: assign session_tokens collection/table
+        session_tokens_table = request.app.state.mongo_database["session_tokens"]
+
+        # MongoDB: insert token into session_tokens collection/table
+        await session_tokens_table.insert_one(session_token_data)
+    except Exception as error:
+        return http_response(message=str(error), status_code=500)
+
+    return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)
