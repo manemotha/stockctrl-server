@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from services.auth import *
 from validators.vcredentials import *
-from validators.vauthtoken import validate_admin_token
+from validators.vadmin import validate_admin_token
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from models.admin import *

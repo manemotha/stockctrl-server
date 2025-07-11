@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from models.employee import EmployeeSigninModel, EmployeeSignupModel
 from services.auth import *
-from validators.vauthtoken import validate_admin_token
+from validators.vadmin import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
 from validators.vemployee import validate_employee_token
 from datetime import datetime, timezone

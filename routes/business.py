@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from models.business import CreateBusinessModel
 from services.auth import *
-from validators.vauthtoken import validate_admin_token
+from validators.vadmin import validate_admin_token
 from validators.vbusiness import validate_business_name
 from datetime import datetime, timezone
 from utils.controllers import http_response
