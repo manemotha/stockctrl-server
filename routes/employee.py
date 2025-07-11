@@ -143,6 +143,6 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
         # MongoDB: insert token into session_tokens collection/table
         await session_tokens_table.insert_one(session_token_data)
     except Exception as error:
-        return http_response(message=str(error), status_code=500)
+        return http_response(message=str(error), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)
