@@ -124,25 +124,23 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     # Generate token
     token, expires_at = generate_auth_token()["token"], generate_auth_token()["expires_at"]
 
-    try:
-        session_token_data = {
-            "token": token,
-            "employee_id": employee_db_data["_id"],
-            "admin_id": employee_db_data["admin_id"],
-            "business_id": employee_db_data["business_id"],
-            "created_at": datetime.now(timezone.utc),
-            "expires_at": expires_at,
-            "revoked": False,
-            "revoked_at": None,
-            "is_admin": False
-        }
+    # Complete employee token data
+    session_token_data = {
+        "token": token,
+        "employee_id": employee_db_data["_id"],
+        "admin_id": employee_db_data["admin_id"],
+        "business_id": employee_db_data["business_id"],
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires_at,
+        "revoked": False,
+        "revoked_at": None,
+        "is_admin": False
+    }
 
-        # MongoDB: assign session_tokens collection/table
-        session_tokens_table = request.app.state.mongo_database["session_tokens"]
+    # MongoDB: assign session_tokens collection/table
+    session_tokens_table = request.app.state.mongo_database["session_tokens"]
 
-        # MongoDB: insert token into session_tokens collection/table
-        await session_tokens_table.insert_one(session_token_data)
-    except Exception as error:
-        return http_response(message=str(error), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # MongoDB: insert token into session_tokens collection/table
+    await session_tokens_table.insert_one(session_token_data)
 
     return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)
