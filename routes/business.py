@@ -17,15 +17,20 @@ async def create_new_business(request: Request, payload: CreateBusinessModel):
     # Read the payload and convert it to a dictionary
     business_data: dict[str, Any] = payload.model_dump()
 
-    # Assign business name in lowercase
-    business_name = business_data["name"].lower()
+    # Assign business name
+    business_name = business_data["name"]
 
     # Validate: business name
     validation_result = await validate_business_name(business_name, request)
     if validation_result:
         return http_response(message=validation_result, status_code=status.HTTP_409_CONFLICT)
 
+    # Ensure: business name contains no whitespaces and is lowercase
+    # Key name_lower is used to query MongoDB
+    name_lower: str = "".join(business_name.split()).lower()
+
     # Insert system additional fields
+    business_data['name_lower'] = name_lower
     business_data['admin_id'] = request.app.state.admin_id
     business_data['created_at'] = datetime.now(timezone.utc)
     business_data['is_active'] = True
