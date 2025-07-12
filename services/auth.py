@@ -9,9 +9,7 @@ def generate_auth_token() -> dict[str, str | datetime]:
     """
     Generate authentication token with an expiration date.
 
-    **Return:**
-     token (str)\n
-     expires_at (datetime)
+    :returns: A dictionary containing token and its expiration date.
     """
     token = secrets.token_urlsafe(64)
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
@@ -22,9 +20,9 @@ async def revoke_auth_token(request: Request, token: str):
     """
     Revoke a session token by setting its 'revoked' status to True.
 
-    **Args:**
-     token (str)\n
-     request (FastAPI Request)
+    :param request: FastAPI request object.
+    :param token: Authentication token for which to revoke.
+    :returns: None
     """
     # MongoDB: assign auth_tokens collection/table
     auth_tokens_table = request.app.state.mongo_database["session_tokens"]
@@ -39,11 +37,11 @@ async def revoke_auth_token(request: Request, token: str):
 async def replace_admin_auth_token(request: Request, employee_id: ObjectId):
     """
     Override admin token with employee token for future requests.
-    Current session is now authorized to the employee.
+    The current session is now authorized to the employee.
 
-    **Args:**
-     request (FastAPI Request)
-     admin_token (str) : The token for which to replace.
+    :param request: FastAPI request object.
+    :param employee_id: The employee id for which to replace admin token with.
+    :returns: None
     """
     # MongoDB: assign auth_tokens collection/table
     session_tokens_table = request.app.state.mongo_database["session_tokens"]
@@ -57,13 +55,10 @@ async def replace_admin_auth_token(request: Request, employee_id: ObjectId):
 
 def hash_password(password: str) -> bytes:
     """
-    Generate hashed password
+    Generate hashed password.
 
-    **Args:**
-     password (str):
-
-    **Return:**
-     (bytes) bcrypt hashed password
+    :param password: The string to hash.
+    :returns: The hashed password as bytes.
     """
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
 
@@ -72,11 +67,8 @@ def compare_hashed_password(password: str, hashed_password: bytes) -> bool:
     """
     Compare a password with a hashed password.
 
-    **Args:**
-     password (str): The plain text password to compare.\n
-     hashed_password (bytes): The hashed password to compare against.
-
-    **Return:**
-     (bool) True | False
+    :param password: The string password to compare.
+    :param hashed_password: The hashed password to compare against.
+    :returns: True if the password matches the hashed password, otherwise False.
     """
     return bcrypt.checkpw(password.encode("utf-8"), hashed_password)

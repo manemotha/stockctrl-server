@@ -5,12 +5,9 @@ async def validate_business_name(name: str, request: Request) -> str:
     """
     Validate business name
 
-    **Args:**
-     name (str)\n
-     request (FastAPI Request)
-
-    **Return:**
-     String (str)
+    :param name: The business name to validate.
+    :param request: FastAPI request object.
+    :return: A message if a business with the same name exists, otherwise None.
     """
     # MongoDB: businesses collection/table
     businesses_table = request.app.state.mongo_database["businesses"]

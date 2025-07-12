@@ -2,11 +2,8 @@ def validate_password(password: str) -> str:
     """
     Ensure password is valid and meets authentication requirements.
 
-    **Args:**
-     Password (str)
-
-    **Return:**
-     "valid password" | validation error message (str)
+    :param password: The password to validate.
+    :returns: "valid password" if the password meets all requirements, otherwise a validation error message (str)
     """
 
     # ensure user:password meets requirements
@@ -28,11 +25,8 @@ def validate_username(username: str) -> str:
     """
     Ensure username is valid and meets **SC** requirements.
 
-    **Args:**
-     username (str)
-
-    **Return:**
-     "valid username" | validation error message (str)
+    :param username: The username to validate.
+    :returns: "valid username" if the username meets all requirements, otherwise a validation error message (str)
     """
 
     # [ensure] username is type:string
