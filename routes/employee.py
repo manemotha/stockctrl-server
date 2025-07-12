@@ -9,8 +9,6 @@ from datetime import datetime, timezone
 from utils.controllers import http_response
 from typing import Any
 from bson import ObjectId, errors as bson_error
-import asyncio
-import time
 
 employee_routes = APIRouter()
 
@@ -96,34 +94,13 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     # MongoDB: get employee data from database
     employee_db_data = await employees_table.find_one({"admin_id": request.app.state.admin_id, "username": employee_data["username"]})
 
-    # The amount of seconds to delay response
-    delay_duration: float = 1.5
+    # Ensure: username & password verification process takes consistent response time
+    verification_result = await verify_login_credentials(employee_data, employee_db_data)
+    if verification_result == "invalid credentials":
+        return http_response(message=verification_result, status_code=status.HTTP_401_UNAUTHORIZED)
 
-    # Validate: username
-    if not employee_db_data or not isinstance(employee_db_data, dict):
-        await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
-        return http_response(message="invalid credentials", status_code=status.HTTP_401_UNAUTHORIZED)
-
-    # Check how much time it too for compare_hashed_password to complete
-    # Subtract time_elapsed from delay_duration if time_elapsed is less < than delay_duration
-    start_time = time.perf_counter()
-
-    # Bcrypt: compare passwords
-    comparison_result = compare_hashed_password(employee_data["password"], employee_db_data["password"])
-
-    # Time Bcrypt took to complete
-    elapsed_time = time.perf_counter() - start_time
-
-    # Validate: password
-    if not comparison_result:
-        if elapsed_time < delay_duration:
-            await asyncio.sleep(delay_duration - elapsed_time)
-        else:
-            await asyncio.sleep(delay_duration)
-        return http_response(message="invalid credentials", status_code=status.HTTP_401_UNAUTHORIZED)
-
-    # Generate token
-    token, expires_at = generate_auth_token()["token"], generate_auth_token()["expires_at"]
+    # Assign: token and expires_at
+    token, expires_at = verification_result["token"], verification_result["expires_at"]
 
     # Complete employee token data
     session_token_data = {

@@ -3,6 +3,9 @@ from datetime import datetime, timezone, timedelta
 import secrets
 import bcrypt
 from bson import ObjectId
+from typing import Any
+import asyncio
+import time
 
 
 def generate_auth_token() -> dict[str, str | datetime]:
@@ -72,3 +75,42 @@ def compare_hashed_password(password: str, hashed_password: bytes) -> bool:
     :returns: True if the password matches the hashed password, otherwise False.
     """
     return bcrypt.checkpw(password.encode("utf-8"), hashed_password)
+
+
+async def verify_login_credentials(user_data: dict[str, Any], user_db_data: dict[str, Any]) -> str | dict[str, str]:
+    """
+    Verifies request data [username, password] and ensures consistent response time for each validation process.
+
+    :param user_data: Request data.
+    :param user_db_data: MongoDB user data.
+    :return: A string "invalid credentials" or a dictionary with token and expiration date.
+    """
+    # The amount of seconds to delay the response
+    delay_duration: float = 1.5
+
+    # Validate: username
+    if not user_db_data or not isinstance(user_db_data, dict):
+        await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
+        return "invalid credentials"
+
+    # Check how much time it too for compare_hashed_password to complete
+    # Subtract time_elapsed from delay_duration if time_elapsed is less < than delay_duration
+    start_time = time.perf_counter()
+
+    # Bcrypt: compare passwords
+    comparison_result = compare_hashed_password(user_data["password"], user_db_data["password"])
+
+    # Time Bcrypt took to complete
+    elapsed_time = time.perf_counter() - start_time
+
+    # Validate: password
+    if not comparison_result:
+        if elapsed_time < delay_duration:
+            await asyncio.sleep(delay_duration - elapsed_time)
+        else:
+            await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
+        return "invalid credentials"
+
+    # Generate token and expires_at datetime
+    token_data: dict = generate_auth_token()
+    return {"token": token_data["token"],"expires_at": token_data["expires_at"]}

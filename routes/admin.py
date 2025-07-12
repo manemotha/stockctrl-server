@@ -6,7 +6,6 @@ from validators.vadmin import validate_admin_token
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from models.admin import *
-import asyncio
 import pymongo.errors
 from typing import Any
 
@@ -73,17 +72,13 @@ async def create_admin_auth_token(payload: AdminSigninModel, request: Request):
     # MongoDB: find admin with matching username
     admin_db_data = await admins_table.find_one({"username": admin_data["username"]})
 
-    # Validate: admin username and password
-    if not admin_db_data or not isinstance(admin_db_data, dict) or not compare_hashed_password(admin_data["password"], admin_db_data["password"]):
-        await asyncio.sleep(1.5) # delay response by 1.5 seconds
-        return http_response(message="invalid credentials", status_code=status.HTTP_401_UNAUTHORIZED)
+    # Ensure: username & password verification process takes consistent response time
+    verification_result = await verify_login_credentials(admin_data, admin_db_data)
+    if verification_result == "invalid credentials":
+        return http_response(message=verification_result, status_code=status.HTTP_401_UNAUTHORIZED)
 
-    try:
-        # Generate auth_token
-        token = generate_auth_token()["token"]
-        expires_at = generate_auth_token()["expires_at"]
-    except KeyError:
-        return http_response(message="error generating auth_token", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # Assign: token and expires_at
+    token, expires_at = verification_result["token"], verification_result["expires_at"]
 
     # Declare session_token data
     session_token_data = {
