@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 from models.business import CreateBusinessModel
 from services.auth import *
+from enums.business import BusinessType
 from validators.vadmin import validate_admin_token
 from validators.vbusiness import validate_business_name
 from datetime import datetime, timezone
@@ -16,6 +17,10 @@ async def create_new_business(request: Request, payload: CreateBusinessModel):
 
     # Read the payload and convert it to a dictionary
     business_data: dict[str, Any] = payload.model_dump()
+
+    # Ensure: business type is service-based
+    if business_data["type"] == BusinessType.PRODUCT.value:
+        return http_response(message=f"{BusinessType.PRODUCT.value} logic is not yet supported, use {BusinessType.SERVICE.value} instead.", status_code=status.HTTP_501_NOT_IMPLEMENTED)
 
     # Assign business name
     business_name = business_data["name"]
