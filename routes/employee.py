@@ -20,12 +20,12 @@ async def add_new_employee(request: Request, payload: EmployeeSignupModel):
     # Read the payload and convert it to a dictionary
     employee_data: dict[str, Any] = payload.model_dump()
 
-    # Validate: username
+    # VALIDATE: username
     username_validation_result = validate_username(employee_data['username'])
     if username_validation_result != "valid username":
         return http_response(message=username_validation_result, status_code=status.HTTP_400_BAD_REQUEST)
 
-    # MongoDB: assign employees collection/table
+    # MONGODB: assign employees collection/table
     employees_table = request.app.state.mongo_database["employees"]
 
     # Check if employee with username exists
@@ -45,13 +45,13 @@ async def add_new_employee(request: Request, payload: EmployeeSignupModel):
         # ObjectId can not be initialized from business_id
         return http_response(message="invalid business_id", status_code=status.HTTP_400_BAD_REQUEST)
 
-    # MongoDB: assign businesses collection/table
+    # MONGODB: assign businesses collection/table
     businesses_table = request.app.state.mongo_database["businesses"]
 
     # Find business with matching admin_id & business_id
     business_db_data = await businesses_table.find_one(query)
 
-    # Validate: business
+    # VALIDATE: business
     if not business_db_data or not isinstance(business_db_data, dict):
         return http_response(message="invalid business_id", status_code=status.HTTP_400_BAD_REQUEST)
 
@@ -62,7 +62,7 @@ async def add_new_employee(request: Request, payload: EmployeeSignupModel):
     employee_data['is_active'] = True
     employee_data['is_admin'] = False
 
-    # Validate: password
+    # VALIDATE: password
     employee_password = employee_data['password']
     password_validation_result = validate_password(employee_password)
 
@@ -75,7 +75,7 @@ async def add_new_employee(request: Request, payload: EmployeeSignupModel):
     # Insert hashed password into employee_data
     employee_data["password"] = hashed_password
 
-    # MongoDB: insert new employee data
+    # MONGODB: insert new employee data
     await employees_table.insert_one(employee_data)
 
     return http_response(message="employee created", status_code=status.HTTP_201_CREATED)
@@ -88,18 +88,18 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     # Read the payload and convert it to a dictionary
     employee_data: dict[str, Any] = payload.model_dump()
 
-    # MongoDB: assign employees collection/table
+    # MONGODB: assign employees collection/table
     employees_table = request.app.state.mongo_database["employees"]
 
-    # MongoDB: get employee data from database
+    # MONGODB: get employee data from database
     employee_db_data = await employees_table.find_one({"admin_id": request.app.state.admin_id, "username": employee_data["username"]})
 
-    # Ensure: username & password verification process takes consistent response time
+    # ENSURE: username & password verification process takes consistent response time
     verification_result = await verify_login_credentials(employee_data, employee_db_data)
     if verification_result == "invalid credentials":
         return http_response(message=verification_result, status_code=status.HTTP_401_UNAUTHORIZED)
 
-    # Assign: token and expires_at
+    # Assign token and expires_at
     token, expires_at = verification_result["token"], verification_result["expires_at"]
 
     # Complete employee token data
@@ -118,10 +118,10 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     # Replace admin token with employee token
     await replace_admin_auth_token(request, session_token_data["employee_id"])
 
-    # MongoDB: assign session_tokens collection/table
+    # MONGODB: assign session_tokens collection/table
     session_tokens_table = request.app.state.mongo_database["session_tokens"]
 
-    # MongoDB: insert token into session_tokens collection/table
+    # MONGODB: insert token into session_tokens collection/table
     await session_tokens_table.insert_one(session_token_data)
 
     return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)

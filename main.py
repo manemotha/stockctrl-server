@@ -34,7 +34,7 @@ app = FastAPI(
     tz_aware=True,
 )
 
-# Declare server routes
+# Assign server routes
 app.include_router(admin_routes, prefix="/api/admin", tags=["admin"])
 app.include_router(business_routes, prefix="/api/business", tags=["business"])
 app.include_router(employee_routes, prefix="/api/employee", tags=["employee"])

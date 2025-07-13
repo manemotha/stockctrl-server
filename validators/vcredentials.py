@@ -6,9 +6,8 @@ def validate_password(password: str) -> str:
     :returns: "valid password" if the password meets all requirements, otherwise a validation error message (str)
     """
 
-    # ensure user:password meets requirements
+    # ENSURE: password contains symbols, digit and upper letters
     if len(password) >= 8:
-        # [ensure] password contains symbols, digit and upper letters
         has_upper = any(char.isupper() for char in password)
         has_lower = any(char.islower() for char in password)
         has_digit = any(char.isdigit() for char in password)
@@ -29,22 +28,22 @@ def validate_username(username: str) -> str:
     :returns: "valid username" if the username meets all requirements, otherwise a validation error message (str)
     """
 
-    # [ensure] username is type:string
+    # ENSURE: username is type:string
     if type(username) is not str:
         username = str(username)
 
-    # [ensure] username meets requirements
+    # ENSURE: username meets requirements
     if len(username) >= 5:
 
-        # [ensure] username maximum number of characters allowed is 30 chars
+        # ENSURE: username maximum number of characters allowed is 30 chars
         if len(username) > 30:
             return "username maximum number of characters allowed is 30 chars"
 
-        # [ensure] username contains only lowercase letters, digits, underscores, and periods
+        # ENSURE: username contains only lowercase letters, digits, underscores, and periods
         if not username.islower() or not all(char.isalnum() or char in '._' for char in username):
             return "username must be lowercase and can only contain letters, digits, underscores, and periods (._)"
 
-        # [ensure] username does not begin or end with symbols
+        # ENSURE: username does not begin or end with symbols
         if username[0] in '._' or username[-1] in '._':
             return "username cannot begin or end with special characters (._)"
 

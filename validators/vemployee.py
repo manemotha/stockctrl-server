@@ -14,7 +14,7 @@ def validate_employee_token():
         @wraps(func)
         async def wrapper(request: Request, *args, **kwargs):
 
-            # MongoDB: assign session_tokens collection/table
+            # MONGODB: assign session_tokens collection/table
             session_tokens_table = request.app.state.mongo_database["session_tokens"]
 
             # Get auth_token from authorization header
@@ -22,24 +22,24 @@ def validate_employee_token():
             if not auth_header:
                 return http_response(message="missing authorization header", status_code=status.HTTP_401_UNAUTHORIZED)
 
-            # Validate: auth_token is in correct format
+            # VALIDATE: auth_token is in correct format
             token = auth_header.replace("Bearer", "").strip()
 
-            # MongoDB: find user with matching session_token
+            # MONGODB: find user with matching session_token
             employee_db_data = await session_tokens_table.find_one({"is_admin": False, "token": token})
 
-            # Validate: token is invalid
+            # VALIDATE: token is invalid
             if not employee_db_data or not isinstance(employee_db_data, dict):
                 return http_response(message="invalid employee auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
 
-            # Validate: token is revoked
+            # VALIDATE: token is revoked
             if employee_db_data["revoked"] and employee_db_data["revoked_at"]:
                 return http_response(message="revoked employee auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
 
-            # Assign: auth_token expiration date
+            # Assign auth_token expiration date
             expires_at = employee_db_data["expires_at"]
 
-            # Validate: token is expired
+            # VALIDATE: token is expired
             if expires_at < datetime.now(timezone.utc):
                 return http_response(message="expired employee auth_token", status_code=status.HTTP_401_UNAUTHORIZED)
 

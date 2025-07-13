@@ -27,10 +27,10 @@ async def revoke_auth_token(request: Request, token: str):
     :param token: Authentication token for which to revoke.
     :returns: None
     """
-    # MongoDB: assign auth_tokens collection/table
+    # MONGODB: assign auth_tokens collection/table
     auth_tokens_table = request.app.state.mongo_database["session_tokens"]
 
-    # MongoDB: set session_token revoked to true
+    # MONGODB: set session_token revoked to true
     await auth_tokens_table.update_one(
         {"token": token},
         {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}}
@@ -46,10 +46,10 @@ async def replace_admin_auth_token(request: Request, employee_id: ObjectId):
     :param employee_id: The employee id for which to replace admin token with.
     :returns: None
     """
-    # MongoDB: assign auth_tokens collection/table
+    # MONGODB: assign auth_tokens collection/table
     session_tokens_table = request.app.state.mongo_database["session_tokens"]
 
-    # MongoDB: set session_token replaced to true
+    # MONGODB: set session_token replaced to true
     await session_tokens_table.update_one(
         {"token": request.app.state.token},
         {"$set": {"is_replaced": True, "replaced_by": employee_id, "replaced_at": datetime.now(timezone.utc)}}
@@ -88,27 +88,27 @@ async def verify_login_credentials(user_data: dict[str, Any], user_db_data: dict
     # The amount of seconds to delay the response
     delay_duration: float = 1.5
 
-    # Validate: username
+    # VALIDATE: username
     if not user_db_data or not isinstance(user_db_data, dict):
-        await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
+        await asyncio.sleep(delay_duration) # delay response
         return "invalid credentials"
 
     # Check how much time it too for compare_hashed_password to complete
     # Subtract time_elapsed from delay_duration if time_elapsed is less < than delay_duration
     start_time = time.perf_counter()
 
-    # Bcrypt: compare passwords
+    # BCRYPT: compare passwords
     comparison_result = compare_hashed_password(user_data["password"], user_db_data["password"])
 
     # Time Bcrypt took to complete
     elapsed_time = time.perf_counter() - start_time
 
-    # Validate: password
+    # VALIDATE: password
     if not comparison_result:
         if elapsed_time < delay_duration:
             await asyncio.sleep(delay_duration - elapsed_time)
         else:
-            await asyncio.sleep(delay_duration) # delay response by 1.5 seconds
+            await asyncio.sleep(delay_duration) # delay response
         return "invalid credentials"
 
     # Generate token and expires_at datetime
