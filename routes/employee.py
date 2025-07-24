@@ -127,6 +127,21 @@ async def create_employee_auth_token(request: Request, payload: EmployeeSigninMo
     return JSONResponse(content={"message": "employee auth_token created", "token": token, "is_admin": False}, status_code=status.HTTP_201_CREATED)
 
 
+@employee_routes.delete("/token")
+@validate_employee_token()
+async def revoke_employee_auth_token(request: Request):
+
+    # Revoke the auth token
+    await revoke_auth_token(request=request, token=request.app.state.token)
+
+    # Remove admin_id, employee_id and token from the app state
+    request.app.state.admin_id = None
+    request.app.state.employee_id = None
+    request.app.state.token = None
+
+    return http_response(message="revoked employee auth_token", status_code=status.HTTP_200_OK)
+
+
 @employee_routes.get("/token")
 @validate_employee_token()
 async def validate_employee_auth_token(request: Request):
