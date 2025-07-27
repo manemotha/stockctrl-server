@@ -115,4 +115,4 @@ async def revoke_admin_auth_token(request: Request):
     request.app.state.admin_id = None
     request.app.state.token = None
 
-    return http_response(message="revoked auth_token", status_code=status.HTTP_200_OK)
+    return http_response(message="revoked admin auth_token", status_code=status.HTTP_200_OK)
