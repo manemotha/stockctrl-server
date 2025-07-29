@@ -31,13 +31,13 @@ Remove the `.example` from `.env.example` file to create a `.env` file and repla
 ### Usage Example
 
 Use [Postman](https://www.postman.com/downloads/) (an API testing tool) to generate user-account.  
-> Format : `JSON` Method : `POST` Route : `/api/admins/create`
+> Format : `JSON` Method : `POST` Route : `/api/admin`
 
 ```
 {
   "username": "tommystone",
   "email": "tomstone@email.com",
-  "password": "Unique12345678",
+  "password": "Unique#12345678",
   "name":"Tommy Stone",
   "phone_number":"+1234567890"
 }
