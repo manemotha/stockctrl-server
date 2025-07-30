@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status
-from models.business import CreateBusinessModel
+from models.business import CreateBusinessModel, RemoveBusinessModel
 from services.auth import *
 from enums.business import BusinessType
 from validators.vadmin import validate_admin_token
-from validators.vbusiness import validate_business_name
+from validators.vbusiness import validate_business_name, check_business_exists
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from typing import Any
@@ -47,3 +47,25 @@ async def create_new_business(request: Request, payload: CreateBusinessModel):
     await businesses_table.insert_one(business_data)
 
     return http_response(message="business created", status_code=status.HTTP_201_CREATED)
+
+
+@business_routes.delete("/")
+@validate_admin_token()
+async def remove_business(request: Request, payload: RemoveBusinessModel):
+
+    # Read the payload and convert it to a dictionary
+    business_data: dict[str, Any] = payload.model_dump()
+
+    # MONGODB: assign businesses collection/table
+    businesses_table = request.app.state.mongo_database["businesses"]
+
+    try:
+        # ENSURE: business exists
+        await check_business_exists(business_data["business_id"], request)
+
+        # MONGODB: delete business with matching business_id
+        await businesses_table.delete_one({"_id": ObjectId(business_data["business_id"])})
+
+        return http_response(message="business removed", status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)

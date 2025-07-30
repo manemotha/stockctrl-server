@@ -1,4 +1,29 @@
 from fastapi import Request
+from bson import ObjectId, errors as bson_error
+
+
+async def check_business_exists(business_id: str, request: Request) -> None:
+    """
+    Check business existence without returning data.
+
+    :param business_id: The business ID to validate.
+    :param request: FastAPI request object.
+    :raise ValueError: If the business_id is invalid or does not exist.
+    """
+    try:
+        query = {
+            '_id': ObjectId(business_id),
+            'admin_id': request.app.state.admin_id
+        }
+    except bson_error.InvalidId:
+        raise ValueError("business does not exist")
+
+    # MONGODB: businesses collection/table
+    businesses_table = request.app.state.mongo_database["businesses"]
+
+    # ENSURE: business exists
+    if await businesses_table.find_one(query, limit=1) is None:
+        raise ValueError("business does not exist")
 
 
 async def validate_business_name(name: str, request: Request) -> str:

@@ -15,3 +15,11 @@ class CreateBusinessModel(BaseModel):
     # Forbid any extra fields in the request
     class Config:
         extra = "forbid"
+
+
+class RemoveBusinessModel(BaseModel):
+    business_id: str = Field(..., min_length=1, max_length=50)
+
+    # Forbid any extra fields in the request
+    class Config:
+        extra = "forbid"
