@@ -1,0 +1,49 @@
+from fastapi import Request
+from bson import ObjectId, errors as bson_error
+from typing import Any
+
+
+async def get_business(request: Request, business_id: str) -> None | dict[str, Any]:
+    """
+    Retrieve business data by ID.
+
+    :param request: Request object.
+    :param business_id: The ID of the business to retrieve.
+    :return: A dictionary with business data.
+    :raises ValueError: If the business_id is invalid or does not exist.
+    """
+    try:
+        query = {
+            '_id': ObjectId(business_id),
+            'admin_id': request.app.state.admin_id
+        }
+    except bson_error.InvalidId:
+        raise ValueError("invalid business_id")
+
+    # MONGODB: assign businesses collection/table
+    businesses_table = request.app.state.mongo_database["businesses"]
+
+    # MONGODB: projection to return only necessary fields.
+    # fields not mentioned here will not be returned and
+    # _id is included by default
+    projection = {
+        'name': True,
+        'name_lower': True,
+        'type': True,
+        'phone_number': True,
+        'currency': True,
+        'timezone': True,
+        'location': True,
+        'is_active': True
+    }
+
+    # MONGODB: find business with matching admin_id & business_id
+    business_db_data = await businesses_table.find_one(query, projection)
+
+    # ENSURE: business is a dictionary
+    if isinstance(business_db_data, dict):
+        # Serialize ObjectId to string for JSON compatibility
+        business_db_data["_id"] = str(business_db_data["_id"])
+        return business_db_data
+    else:
+        raise ValueError("invalid business_id")

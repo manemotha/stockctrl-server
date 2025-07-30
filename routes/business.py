@@ -1,6 +1,8 @@
 from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 from models.business import CreateBusinessModel, RemoveBusinessModel
 from services.auth import *
+from services.business.get import get_business
 from enums.business import BusinessType
 from validators.vadmin import validate_admin_token
 from validators.vbusiness import validate_business_name, check_business_exists
@@ -47,6 +49,23 @@ async def create_new_business(request: Request, payload: CreateBusinessModel):
     await businesses_table.insert_one(business_data)
 
     return http_response(message="business created", status_code=status.HTTP_201_CREATED)
+
+
+@business_routes.get("/{business_id}")
+@validate_admin_token()
+async def get_business_by_id(request: Request, business_id: str):
+
+    try:
+        # Get business with matching business_id
+        business_db_data = await get_business(request, business_id)
+
+        return JSONResponse(
+            content={
+                "message": "business found",
+                "data": business_db_data,
+            }, status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @business_routes.delete("/")
