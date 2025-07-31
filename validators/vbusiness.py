@@ -16,14 +16,14 @@ async def check_business_exists(business_id: str, request: Request) -> None:
             'admin_id': request.app.state.admin_id
         }
     except bson_error.InvalidId:
-        raise ValueError("business does not exist")
+        raise ValueError("invalid business_id")
 
     # MONGODB: businesses collection/table
     businesses_table = request.app.state.mongo_database["businesses"]
 
     # ENSURE: business exists
     if await businesses_table.find_one(query, limit=1) is None:
-        raise ValueError("business does not exist")
+        raise ValueError("invalid business_id")
 
 
 async def validate_business_name(name: str, request: Request) -> str:
