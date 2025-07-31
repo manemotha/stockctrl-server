@@ -1,11 +1,15 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from services.auth import *
+from services.business.get import get_business, get_businesses
+from services.business.delete import delete_business
 from validators.vcredentials import *
 from validators.vadmin import validate_admin_token
+from validators.vbusiness import validate_business_name
 from datetime import datetime, timezone
 from utils.controllers import http_response
 from models.admin import *
+from models.business import *
 import pymongo.errors
 from typing import Any
 
@@ -116,3 +120,87 @@ async def revoke_admin_auth_token(request: Request):
     request.app.state.token = None
 
     return http_response(message="revoked admin auth_token", status_code=status.HTTP_200_OK)
+
+
+@admin_routes.post("/business")
+@validate_admin_token()
+async def create_new_business(request: Request, payload: CreateBusinessModel):
+
+    # Read the payload and convert it to a dictionary
+    business_data: dict[str, Any] = payload.model_dump()
+
+    # ENSURE: business type is service-based
+    if business_data["type"] == BusinessType.PRODUCT.value:
+        return http_response(message=f"{BusinessType.PRODUCT.value} logic is not yet supported, use {BusinessType.SERVICE.value} instead.", status_code=status.HTTP_501_NOT_IMPLEMENTED)
+
+    # Assign business name
+    business_name = business_data["name"]
+
+    # VALIDATE: business name
+    validation_result = await validate_business_name(business_name, request)
+    if validation_result:
+        return http_response(message=validation_result, status_code=status.HTTP_409_CONFLICT)
+
+    # ENSURE: business name contains no whitespaces and is lowercase
+    # Key name_lower is used to query MongoDB
+    name_lower: str = "".join(business_name.split()).lower()
+
+    # Insert system additional fields
+    business_data['name_lower'] = name_lower
+    business_data['admin_id'] = request.app.state.admin_id
+    business_data['created_at'] = datetime.now(timezone.utc)
+    business_data['is_active'] = True
+
+    # MONGODB: assign businesses collection/table
+    businesses_table = request.app.state.mongo_database["businesses"]
+
+    # MONGODB: insert new business data
+    await businesses_table.insert_one(business_data)
+
+    return http_response(message="business created", status_code=status.HTTP_201_CREATED)
+
+
+@admin_routes.delete("/business/{business_id}")
+@validate_admin_token()
+async def remove_business_by_id(request: Request, business_id: str):
+
+    try:
+        # Delete business with matching business_id
+        await delete_business(request, business_id)
+        return http_response(message="business removed", status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
+
+
+@admin_routes.get("/business/{business_id}")
+@validate_admin_token()
+async def get_business_by_id(request: Request, business_id: str):
+
+    try:
+        # Get business with matching business_id
+        business_db_data = await get_business(request, business_id)
+
+        return JSONResponse(
+            content={
+                "message": "business found",
+                "data": business_db_data,
+            }, status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
+
+
+@admin_routes.get("/business")
+@validate_admin_token()
+async def get_all_businesses(request: Request):
+
+    try:
+        #
+        businesses_found = await get_businesses(request)
+    except ValueError:
+        return http_response(message="no businesses found", status_code=status.HTTP_404_NOT_FOUND)
+
+    # ENSURE: businesses_found is a list
+    if businesses_found is None:
+        return http_response(message="no businesses found", status_code=status.HTTP_404_NOT_FOUND)
+
+    return JSONResponse(content={"message": "businesses found", "data": businesses_found}, status_code=status.HTTP_200_OK)

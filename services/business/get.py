@@ -47,3 +47,47 @@ async def get_business(request: Request, business_id: str) -> None | dict[str, A
         return business_db_data
     else:
         raise ValueError("invalid business_id")
+
+
+async def get_businesses(request: Request) -> None | list[dict[str, Any]]:
+    """
+    Retrieve all user businesses.
+
+    :param request: Request object.
+    :return: A dictionary with businesses data.
+    :return: A dictionary businesses data or None if no businesses exist.
+    """
+    # MONGODB: assign businesses collection/table
+    businesses_table = request.app.state.mongo_database["businesses"]
+
+    # MONGODB: projection to return only necessary fields.
+    # fields not mentioned here will not be returned and
+    # _id is included by default
+    projection = {
+        'name': True,
+        'name_lower': True,
+        'type': True,
+        'phone_number': True,
+        'currency': True,
+        'timezone': True,
+        'location': True,
+        'is_active': True
+    }
+
+    # MONGODB: find business with matching admin_id & business_id
+    businesses_db_data = await businesses_table.find({
+        'admin_id': request.app.state.admin_id
+    }, projection).to_list(length=None)
+
+    # Serialize ObjectId to string for JSON compatibility
+    result_businesses = []
+    for business in businesses_db_data:
+        if isinstance(business, dict):
+            business["_id"] = str(business["_id"])
+            result_businesses.append(business)
+
+    # ENSURE: at least one business exists
+    if len(result_businesses) == 0:
+        return None
+
+    return result_businesses
