@@ -2,6 +2,7 @@ from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from models.employee import EmployeeSigninModel, EmployeeSignupModel
 from services.auth import *
+from services.business.get import get_business, get_businesses
 from validators.vadmin import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
 from validators.vemployee import validate_employee_token
@@ -146,3 +147,20 @@ async def revoke_employee_auth_token(request: Request):
 @validate_employee_token()
 async def validate_employee_auth_token(request: Request):
     return http_response(message="valid employee auth_token", status_code=status.HTTP_200_OK)
+
+
+@employee_routes.get("/business/{business_id}")
+@validate_employee_token()
+async def get_business_by_id(request: Request, business_id: str):
+
+    try:
+        # Get business with matching business_id
+        business_db_data = await get_business(request, business_id)
+
+        return JSONResponse(
+            content={
+                "message": "business found",
+                "data": business_db_data,
+            }, status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
