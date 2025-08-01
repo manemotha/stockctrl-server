@@ -26,7 +26,7 @@ def validate_admin_token():
             token = auth_header.replace("Bearer", "").strip()
 
             # MONGODB: find user with matching session_token
-            user_db_data = await auth_tokens_table.find_one({"token": token})
+            user_db_data = await auth_tokens_table.find_one({"is_admin": True, "token": token})
 
             # VALIDATE: token is invalid
             if not user_db_data or not isinstance(user_db_data, dict):
