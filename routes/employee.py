@@ -149,13 +149,17 @@ async def validate_employee_auth_token(request: Request):
     return http_response(message="valid employee auth_token", status_code=status.HTTP_200_OK)
 
 
-@employee_routes.get("/business/{business_id}")
+@employee_routes.get("/business")
 @validate_employee_token()
-async def get_business_by_id(request: Request, business_id: str):
+async def get_business_by_id(request: Request):
+
+    # NOTE: employee get_business_by_id route does not require business_id
+    # because it is already stored in the app state after employee login.
+    # We can directly use request.app.state.business_id.
 
     try:
         # Get business with matching business_id
-        business_db_data = await get_business(request, business_id)
+        business_db_data = await get_business(request, request.app.state.business_id)
 
         return JSONResponse(
             content={
