@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from services.auth import *
 from services.business.get import get_business, get_businesses
 from services.business.delete import delete_business
+from services.admin.get import get_admin
 from validators.vcredentials import *
 from validators.vadmin import validate_admin_token
 from validators.vbusiness import validate_business_name
@@ -120,6 +121,23 @@ async def revoke_admin_auth_token(request: Request):
     request.app.state.token = None
 
     return http_response(message="revoked admin auth_token", status_code=status.HTTP_200_OK)
+
+
+@admin_routes.get("/")
+@validate_admin_token()
+async def get_admin_profile(request: Request):
+
+    try:
+        # Get admin profile data
+        admin_profile = await get_admin(request)
+
+        return JSONResponse(
+            content={
+                "message": "admin found",
+                "data": admin_profile
+            }, status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="admin not found", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @admin_routes.post("/business")
