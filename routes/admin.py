@@ -155,9 +155,12 @@ async def create_new_business(request: Request, payload: CreateBusinessModel):
     businesses_table = request.app.state.mongo_database["businesses"]
 
     # MONGODB: insert new business data
-    await businesses_table.insert_one(business_data)
+    new_business = await businesses_table.insert_one(business_data)
 
-    return http_response(message="business created", status_code=status.HTTP_201_CREATED)
+    # ObjectId of the newly inserted business
+    business_id = str(new_business.inserted_id)
+
+    return JSONResponse(content={"message": "business created", "business_id": business_id}, status_code=status.HTTP_201_CREATED)
 
 
 @admin_routes.delete("/business/{business_id}")
