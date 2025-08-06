@@ -1,6 +1,6 @@
 from fastapi import Request, status
 from functools import wraps
-from utils.controllers import http_response
+from core.http_responses import http_response
 from datetime import datetime, timezone
 
 
