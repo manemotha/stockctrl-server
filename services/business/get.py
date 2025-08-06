@@ -1,4 +1,5 @@
 from fastapi import Request
+from core.format import iso_format_datetime
 from bson import ObjectId, errors as bson_error
 from typing import Any
 
@@ -34,7 +35,8 @@ async def get_business(request: Request, business_id: str) -> None | dict[str, A
         'currency': True,
         'timezone': True,
         'location': True,
-        'is_active': True
+        'is_active': True,
+        'created_at': True
     }
 
     # MONGODB: find business with matching admin_id & business_id
@@ -42,8 +44,13 @@ async def get_business(request: Request, business_id: str) -> None | dict[str, A
 
     # ENSURE: business is a dictionary
     if isinstance(business_db_data, dict):
+
         # Serialize ObjectId to string for JSON compatibility
         business_db_data["_id"] = str(business_db_data["_id"])
+
+        # ISO format datetime
+        business_db_data["created_at"] = iso_format_datetime(business_db_data["created_at"])
+
         return business_db_data
     else:
         raise ValueError("invalid business_id")
@@ -71,7 +78,8 @@ async def get_businesses(request: Request) -> None | list[dict[str, Any]]:
         'currency': True,
         'timezone': True,
         'location': True,
-        'is_active': True
+        'is_active': True,
+        'created_at': True
     }
 
     # MONGODB: find business with matching admin_id & business_id
@@ -83,7 +91,14 @@ async def get_businesses(request: Request) -> None | list[dict[str, Any]]:
     result_businesses = []
     for business in businesses_db_data:
         if isinstance(business, dict):
+
+            # ISO format datetime
+            business["created_at"] = iso_format_datetime(business["created_at"])
+
+            # Serialize ObjectId to string for JSON compatibility
             business["_id"] = str(business["_id"])
+
+            # Append business into result businesses
             result_businesses.append(business)
 
     # ENSURE: at least one business exists
