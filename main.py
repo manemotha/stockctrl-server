@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from routes.admin import admin_routes
 from routes.employee import employee_routes
+from fastapi.middleware.cors import CORSMiddleware
 from pymongo import AsyncMongoClient
 from uvicorn import run
 import os
@@ -31,6 +32,15 @@ app = FastAPI(
     description="A robust stock management solution designed to streamline inventory operations.",
     lifespan=lifespan,
     tz_aware=True,
+)
+
+# This is enabled in development and is disabled in production
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Assign server routes
