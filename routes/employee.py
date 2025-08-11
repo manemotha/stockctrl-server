@@ -78,9 +78,15 @@ async def add_new_employee(request: Request, payload: EmployeeSignupModel):
     employee_data["password"] = hashed_password
 
     # MONGODB: insert new employee data
-    await employees_table.insert_one(employee_data)
+    new_employee = await employees_table.insert_one(employee_data)
 
-    return http_response(message="employee created", status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content={
+            "message": "employee added",
+            "employee_id": str(new_employee.inserted_id)
+        },
+        status_code=status.HTTP_201_CREATED
+    )
 
 
 @employee_routes.post("/token")
