@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from models.employee import EmployeeSigninModel, EmployeeSignupModel
 from services.auth import *
 from services.business.get import get_business
+from services.employee.get import get_employee
 from validators.vadmin import validate_admin_token
 from validators.vcredentials import validate_username, validate_password
 from validators.vemployee import validate_employee_token
@@ -168,3 +169,24 @@ async def get_business_by_id(request: Request):
             }, status_code=status.HTTP_200_OK)
     except ValueError:
         return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
+
+
+@employee_routes.get("/")
+@validate_employee_token()
+async def get_employee_by_id(request: Request):
+
+    # NOTE: employee get_employee_by_id route does not require employee_id
+    # because it is already stored in the app state after employee login.
+    # We can directly use request.app.state.employee_id.
+
+    try:
+        # Get employee with matching employee_id
+        employee_db_data = await get_employee(request, request.app.state.employee_id)
+
+        return JSONResponse(
+            content={
+                "message": "employee found",
+                "data": employee_db_data,
+            }, status_code=status.HTTP_200_OK)
+    except ValueError:
+        return http_response(message="invalid employee_id", status_code=status.HTTP_404_NOT_FOUND)
