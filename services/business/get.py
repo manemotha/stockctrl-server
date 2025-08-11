@@ -82,7 +82,7 @@ async def get_businesses(request: Request) -> None | list[dict[str, Any]]:
         'created_at': True
     }
 
-    # MONGODB: find business with matching admin_id & business_id
+    # MONGODB: find businesses with matching admin_id
     businesses_db_data = await businesses_table.find({
         'admin_id': request.app.state.admin_id
     }, projection).to_list(length=None)
