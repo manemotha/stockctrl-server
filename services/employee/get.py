@@ -3,23 +3,29 @@ from core.formatters import iso_format_datetime
 from typing import Any
 from bson import ObjectId, errors as bson_error
 
-async def get_employee(request: Request, employee_id: ObjectId) -> None | dict[str, Any]:
+
+async def get_employee(request: Request, employee_id: str) -> None | dict[str, Any]:
     """
     Retrieve employee data.
 
     :param request: Request object.
-    :param employee_id: Employee ObjectId.
+    :param employee_id: String ObjectId of employee.
     :return: A dictionary with employee data.
-    :raises ValueError: If employee does not exist.
+    :raises ValueError: If employee_id is invalid or employee with matching ObjectId does not exist.
     """
 
     # MONGODB: assign admins collection/table
     admins_table = request.app.state.mongo_database["employees"]
 
+    try:
+        query = {
+            '_id': ObjectId(employee_id),
+        }
+    except bson_error.InvalidId:
+        raise ValueError("invalid employee_id")
+    
     # MONGODB: find employee with matching id
-    employee_db_data = await admins_table.find_one(
-        {"_id": employee_id},
-    )
+    employee_db_data = await admins_table.find_one(query)
 
     # ENSURE: employee is a dictionary
     if isinstance(employee_db_data, dict):
@@ -37,7 +43,7 @@ async def get_employee(request: Request, employee_id: ObjectId) -> None | dict[s
 
         return employee_db_data
     else:
-        raise ValueError("employee does not exist")
+        raise ValueError("invalid employee_id")
 
 
 async def get_employees(request: Request, business_id: str) -> None | list[dict[str, Any]]:
