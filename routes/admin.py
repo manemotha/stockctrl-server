@@ -211,7 +211,7 @@ async def get_business_by_id(request: Request, business_id: str):
         return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
 
 
-@admin_routes.get("/business")
+@admin_routes.get("/businesses")
 @validate_admin_token()
 async def get_all_businesses(request: Request):
 
@@ -228,7 +228,7 @@ async def get_all_businesses(request: Request):
     return JSONResponse(content={"message": "businesses found", "data": businesses_found}, status_code=status.HTTP_200_OK)
 
 
-@admin_routes.get("/employee/{business_id}")
+@admin_routes.get("/employees/{business_id}")
 @validate_admin_token()
 async def get_all_employees(request: Request, business_id: str):
 
