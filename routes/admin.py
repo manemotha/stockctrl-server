@@ -4,7 +4,7 @@ from services.auth import *
 from services.business.get import get_business, get_businesses
 from services.business.delete import delete_business
 from services.admin.get import get_admin
-from services.employee.get import get_employees
+from services.employee.get import get_employees, get_employee
 from validators.vcredentials import *
 from validators.vadmin import validate_admin_token
 from validators.vbusiness import validate_business_name
@@ -226,6 +226,24 @@ async def get_all_businesses(request: Request):
         return http_response(message="no businesses found", status_code=status.HTTP_404_NOT_FOUND)
 
     return JSONResponse(content={"message": "businesses found", "data": businesses_found}, status_code=status.HTTP_200_OK)
+
+
+@admin_routes.get("/employee/{business_id}/{employee_id}")
+@validate_admin_token()
+async def get_employee_by_id(request: Request, business_id: str, employee_id: str):
+
+    try:
+        # Get employee with matching employee_id
+        employee_db_data = await get_employee(request, business_id, employee_id)
+
+        return JSONResponse(
+            content={
+                "message": "employee found",
+                "data": employee_db_data,
+            }, status_code=status.HTTP_200_OK)
+
+    except ValueError:
+        return http_response(message="invalid employee_id", status_code=status.HTTP_404_NOT_FOUND)
 
 
 @admin_routes.get("/employees/{business_id}")
