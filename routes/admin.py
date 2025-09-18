@@ -259,7 +259,11 @@ async def get_all_employees(request: Request, business_id: str):
 
     try:
         employees_found = await get_employees(request, business_id)
-    except ValueError:
+    except ValueError as error:
+
+        if str(error) == "invalid business_id":
+            return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
+
         return http_response(message="no employees found", status_code=status.HTTP_404_NOT_FOUND)
 
     # ENSURE: employees_found is a list
