@@ -2,7 +2,7 @@ from fastapi import Request
 from datetime import datetime, timezone, timedelta
 import secrets
 import bcrypt
-from bson import ObjectId
+from bson import ObjectId, errors as bson_error
 from typing import Any
 import asyncio
 import time
@@ -35,6 +35,39 @@ async def revoke_auth_token(request: Request, token: str):
         {"token": token},
         {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}}
     )
+
+
+async def revoke_employee_auth_tokens(request: Request, employee_id: str):
+    """
+    Revoke all employee's active authentication tokens.
+
+    :param request: FastAPI request object.
+    :param employee_id: String ObjectId of target employee.
+    :returns: None
+    """
+    # MONGODB: assign auth_tokens collection/table
+    auth_tokens_table = request.app.state.mongo_database["session_tokens"]
+
+    try:
+        # ENSURE: employee_id is a valid ObjectId
+        query = {
+            "employee_id": ObjectId(employee_id),
+            'admin_id': request.app.state.admin_id,
+            "revoked": False,
+            "revoked_at": None
+        }
+    except bson_error.InvalidId:
+        raise ValueError("invalid employee_id")
+
+    # MONGODB: set session_token revoked to true
+    revoked_tokens = await auth_tokens_table.update_many(
+        query,
+        {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}}
+    )
+
+    # ENSURE: at least one active token was revoked
+    if revoked_tokens.modified_count == 0:
+        raise ValueError("no active auth_tokens")
 
 
 async def replace_admin_auth_token(request: Request, employee_id: ObjectId):

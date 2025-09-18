@@ -242,3 +242,21 @@ async def get_all_employees(request: Request, business_id: str):
         return http_response(message="no employees found", status_code=status.HTTP_404_NOT_FOUND)
 
     return JSONResponse(content={"message": "employees found", "data": employees_found}, status_code=status.HTTP_200_OK)
+
+
+@admin_routes.delete("/employee/tokens/{employee_id}")
+@validate_admin_token()
+async def revoke_all_employee_tokens(request: Request, employee_id: str):
+
+    try:
+        # Revoke all active employee tokens
+        await revoke_employee_auth_tokens(request=request, employee_id=employee_id)
+    except ValueError as error:
+
+        # Handle invalid employee_id error
+        if error == "invalid employee_id":
+            return http_response(message=str(error), status_code=status.HTTP_404_NOT_FOUND)
+
+        return http_response(message="employee has no active auth_tokens", status_code=status.HTTP_404_NOT_FOUND)
+
+    return http_response(message=f"revoked all employee auth_tokens", status_code=status.HTTP_200_OK)
