@@ -187,7 +187,7 @@ async def get_employee_by_id(request: Request):
 
     try:
         # Get employee with matching employee_id
-        employee_db_data = await get_employee(request, str(request.app.state.employee_id))
+        employee_db_data = await get_employee(request, str(request.app.state.business_id), str(request.app.state.employee_id))
 
         return JSONResponse(
             content={

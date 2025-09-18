@@ -4,28 +4,35 @@ from typing import Any
 from bson import ObjectId, errors as bson_error
 
 
-async def get_employee(request: Request, employee_id: str) -> None | dict[str, Any]:
+async def get_employee(request: Request, business_id: str, employee_id: str) -> None | dict[str, Any]:
     """
     Retrieve employee data.
 
     :param request: Request object.
-    :param employee_id: String ObjectId of employee.
+    :param employee_id: String ObjectId of the employee.
+    :param business_id: String ObjectId of business containing target employee.
     :return: A dictionary with employee data.
     :raises ValueError: If employee_id is invalid or employee with matching ObjectId does not exist.
     """
 
-    # MONGODB: assign admins collection/table
-    admins_table = request.app.state.mongo_database["employees"]
+    # MONGODB: assign employees collection/table
+    employees_table = request.app.state.mongo_database["employees"]
 
     try:
+        # Serialize employee_id to string for JSON compatibility
+        # Query used to find employee with matching id
         query = {
             '_id': ObjectId(employee_id),
         }
+
+        # Serialize business_id to string for JSON compatibility
+        business_id = str(ObjectId(business_id))
+
     except bson_error.InvalidId:
         raise ValueError("invalid employee_id")
     
     # MONGODB: find employee with matching id
-    employee_db_data = await admins_table.find_one(query)
+    employee_db_data = await employees_table.find_one(query)
 
     # ENSURE: employee is a dictionary
     if isinstance(employee_db_data, dict):
@@ -36,7 +43,7 @@ async def get_employee(request: Request, employee_id: str) -> None | dict[str, A
         # Serialize ObjectId to string for JSON compatibility
         employee_db_data["_id"] = str(employee_db_data["_id"])
         employee_db_data["admin_id"] = str(request.app.state.admin_id)
-        employee_db_data["business_id"] = str(request.app.state.business_id)
+        employee_db_data["business_id"] = business_id
 
         # ISO format datetime
         employee_db_data["created_at"] = iso_format_datetime(employee_db_data["created_at"])
