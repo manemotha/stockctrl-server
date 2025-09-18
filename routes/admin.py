@@ -242,7 +242,14 @@ async def get_employee_by_id(request: Request, business_id: str, employee_id: st
                 "data": employee_db_data,
             }, status_code=status.HTTP_200_OK)
 
-    except ValueError:
+    except ValueError as error:
+
+        # Convert error to string for comparison
+        error = str(error)
+
+        if error == "invalid business_id":
+            return http_response(message="invalid business_id", status_code=status.HTTP_404_NOT_FOUND)
+
         return http_response(message="invalid employee_id", status_code=status.HTTP_404_NOT_FOUND)
 
 

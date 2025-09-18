@@ -21,15 +21,15 @@ async def get_employee(request: Request, business_id: str, employee_id: str) -> 
     try:
         # Serialize employee_id to string for JSON compatibility
         # Query used to find employee with matching id
-        query = {
-            '_id': ObjectId(employee_id),
-        }
-
-        # Serialize business_id to string for JSON compatibility
-        business_id = str(ObjectId(business_id))
-
+        query = {'_id': ObjectId(employee_id)}
     except bson_error.InvalidId:
         raise ValueError("invalid employee_id")
+
+    try:
+        # Serialize business_id to string for JSON compatibility
+        business_id = str(ObjectId(business_id))
+    except bson_error.InvalidId:
+        raise ValueError("invalid business_id")
     
     # MONGODB: find employee with matching id
     employee_db_data = await employees_table.find_one(query)
